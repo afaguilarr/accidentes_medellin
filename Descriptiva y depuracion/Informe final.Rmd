@@ -1,0 +1,106 @@
+---
+title: "Informe"
+author: "J_Munera"
+date: "5/30/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+##Carga de paquetes previos
+
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+```
+
+##Depuración de la base de datos
+```{r}
+##Lectura de las 5 bases de datos desde el drectorio
+
+
+setwd("C:/Users/JF_Mra/Documents/Unal S5/TAE/Primer trabajo/Datasets")#Se toman los nombres de los archivos en este directorio
+getwd()
+files_names= list.files(pattern="*.csv")
+df <- do.call(rbind, lapply(files_names, function(x) read.csv(x, stringsAsFactors = FALSE,encoding = 'UTF-8') )) ##se leen y se juntas las 6 bases de datos usando los nombres de los archivos.
+
+```
+
+
+
+```{r setup, include=FALSE}
+#df$RADICADO <- as.character(df$RADICADO)
+#Se cambia el nombre de la primera columna
+df<- df %>% rename(OBJECTID = X.U.FEFF.OBJECTID)
+
+#Cambios de tpo de datos en la base
+df<- df %>% 
+    mutate_at(vars(starts_with("RADIC")),funs(as.character)) %>%
+    mutate_at(vars(starts_with("OBJECT")),funs(as.character))
+```
+
+
+Los elementos en zona rural carecen de barrios o comunas. Al solo sumar 258, se decide eliminarlos del analisis.
+```{r}
+df2 <- df[df$TIPO_GEOCOD!="ZONA RURAL",]
+##Se crea df2, nueva base de datos con las depuraciones respectivas.
+```
+
+
+Se considera que "CON MUERTO" es equivalente a "MUERTO" para la columna "GRAVEDAD":
+Se considera que "Caida Ocupante" es equivalente a "Caida de Ocupante" en la columna "CLASE"
+```{r}
+
+df2[df2$CLASE == "Caida Ocupante" | df2$CLASE == "Caída de Ocupante" ,]$CLASE <- "Caída Ocupante"
+df2[df2$CLASE == "Choque y Atropello" | df2$CLASE ==  "Choque ",]$CLASE = "Choque"
+```
+
+
+```{r}
+clase_c<-count(df2, CLASE)
+clase_c[order(-clase_c$n),]
+count(df2, GRAVEDAD)
+```
+Se decide que el objeto de estudio es Medellín y sus 16 comunas.
+
+```{r}
+##Los datos relevantes que se excluyen corresponden a los 5 corregimientos, que definen la zona rural de medellín
+
+comunas <- count(df2, COMUNA) 
+#head(comunas[order(-comunas$n),],25) #Numero de accidentes por comuna/corregimiento
+comunas_relevantes <- head(comunas[order(-comunas$n),][1], 16) 
+df3 <- df2 #saving df2
+df2 <- df2[df2$COMUNA %in% as.vector(unlist(comunas_relevantes)),]
+
+```
+
+
+Se encuentra que hay un numero de obervaciones con el Radicado repetido. Tras detallada inspección se determina que no son duplicados.
+```{r}
+n_occur <- data.frame(table(df2$RADICADO))
+a<-df2[df3$RADICADO %in% n_occur$Var1[n_occur$Freq > 1],] ## Algunas 5 o 6 tienen los mismos datos. Pero la gran mayoria varian en varias columnas
+a[order(a$RADICADO),]
+```
+
+##NA inspection
+
+De momento opto por remover los NA, luego podemos ver si es preferible realiza imputaciones.
+```{r}
+##ESta es la lista de los NA y los barrios con NA's o espacios vacios, si desea eliminarlos o hacerles imputación más adelante
+df2[df2 == ""] <- NA
+na_DF <- df2[rowSums(is.na(df2)) > 0,]#
+final.df<- na.omit(df2) #DF sin NAs
+
+print(paste("El numero de datos con NA es:" , as.character(dim(na_DF)[1])))
+
+```
+
+Tras las modificaciones de arriba de los 209426 datos originales, quedamos con 202462.
+##Exportación de dfs:
+```{r}
+write.csv(final.df, "df_depurada_1.csv", row.names=F)
+```
+
