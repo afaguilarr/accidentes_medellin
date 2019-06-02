@@ -156,7 +156,7 @@ fviz_nbclust(cluster_df, kmeans, method = "silhouette")
 
 ```{r}
 gap_stat <- clusGap(cluster_df, FUN = kmeans, nstart = 50,
-                    K.max = 10, B =284 )
+                    K.max = 10, B =269 )
 fviz_gap_stat(gap_stat)
 ```
 
@@ -165,14 +165,54 @@ fviz_gap_stat(gap_stat)
 cluster2 <- kmeans(cluster_df, centers = 2, iter.max=1000, nstart=100)
 cluster3 <- kmeans(cluster_df, centers = 3, iter.max=1000, nstart=100)
 cluster4 <- kmeans(cluster_df, centers = 4, iter.max=1000, nstart=100)
-cluster6 <- kmeans(cluster_df, centers = 5, iter.max=1000, nstart=100)
+cluster5 <- kmeans(cluster_df, centers = 5, iter.max=1000, nstart=100)
+cluster6 <- kmeans(cluster_df, centers = 6, iter.max=1000, nstart=100)
+cluster10 <- kmeans(cluster_df, centers = 10, iter.max=1000, nstart=100)
 
 ```
 
 ```{r}
 clust.mat <- matrix(c(cluster2$cluster), ncol=1)
 rownames(clust.mat) <- names(cluster2$cluster)
-clust.mat <- cbind(clust.mat, cluster3$cluster, cluster4$cluster,cluster6$cluster)
-clust.mat
+clust.mat <- cbind(clust.mat, cluster3$cluster, cluster4$cluster,cluster5$cluster,cluster6$cluster, cluster10$cluster)
+
+colnames(clust.mat) <- lapply(c("C2","C3","C4","C5","C6","C10"),paste,"G", sep="")
+clust.mat <- as.data.frame(clust.mat)
+```
+
+
+```{r}
+grouped_df <- merge(cluster_df, clust.mat,by=0,all = T)
+
+grouped_df%>%
+  group_by(C6G)%>%
+  summarise(
+    Atropellos = mean(Atropello),
+    Caidas = mean(`Caída Ocupante`),
+    Choques = mean(Choque),
+    Volcamientos = mean(Volcamiento),
+    Otros = mean(Otro),
+    number = n(),
+    Incendios = mean(Incendio)
+  )
+```
+
+```{r}
+grouped_df%>%
+  group_by(CG)%>%
+  summarise(
+    Atropellos = sd(Atropello),
+    Caidas = sd(`Caída Ocupante`),
+    Choques = sd(Choque),
+    Incendios = sd(Incendio),
+    Volcamientos = sd(Volcamiento),
+    Otros = sd(Otro)
+  )
+```
+
+```{r}
+source("maps_scripts.R")
+medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
+init_map(medellin_map_location)
 ```
 
