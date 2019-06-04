@@ -1,0 +1,15 @@
+---
+title: "Modelo_predictivo_regresion"
+author: "J_Munera"
+date: "6/4/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+```
+
