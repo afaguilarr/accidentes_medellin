@@ -1,0 +1,269 @@
+---
+title: "Modelos_predictivos"
+author: "J_Munera"
+date: "6/2/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(caret) # contiene una implementación del método de los kNN
+```
+
+
+## Modelo predictivo:
+
+## Lectura base de datos depurada
+```{r}
+getwd()
+
+df <-  read.csv("df_depurada_1.csv", header = T,stringsAsFactors = FALSE, encoding = "ISO_8859-1",)
+
+#Añadimos semana a la bse de datos:
+df$SEMANA<- as.numeric(strftime(df$FECHA,"%V"))
+```
+
+## Funcion de agrupamiento de datos segun conjunto espacial y escala temporal
+```{r}
+data_prep <- function(dataf, agr_esp, agr_temp){
+  df1 <- dataf%>%
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp),PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  
+  df2 <- dataf%>% #Df con conteo degun clase de accidente
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp), CLASE,PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  df2 <- spread(data = df2, key = CLASE, total) %>%
+    mutate_all(~replace(., is.na(.), 0))
+  
+  df3 <- dataf%>% #Df con conteo degun clase de accidente
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp), GRAVEDAD,PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  df3 <- spread(data = df3, key = GRAVEDAD, total) %>%
+    mutate_all(~replace(., is.na(.), 0))
+  
+  final_df <- (cbind(df1,df2, df3))
+  
+  return(final_df[,-c(5,6,7,14,15,16)])
+    
+}
+```
+
+## Creacion dfs:
+
+```{r}
+barrios_sem <- df
+
+barrios_sem <- filter(data_prep(barrios_sem, quote(BARRIO), quote(SEMANA)), BARRIO!="0" & BARRIO!="Sin Nombre") 
+colnames(barrios_sem)[6] <- "Caida_ocupante"
+colnames(barrios_sem)[13] <- "SOLO_DANOS"
+
+barrios_mes <- df
+barrios_mes <- filter(data_prep(barrios_mes, quote(BARRIO), quote(MES)), BARRIO!="0" & BARRIO!="Sin Nombre") 
+colnames(barrios_mes)[6] <- "Caida_ocupante"
+colnames(barrios_mes)[13] <- "SOLO_DANOS"
+```
+
+```{r}
+comuna_mes <- df
+comuna_mes <- filter(data_prep(comuna_mes, quote(COMUNA), quote(MES))) 
+colnames(comuna_mes)[6] <- "Caida_ocupante"
+colnames(comuna_mes)[13] <- "SOLO_DANOS"
+
+comuna_sem <- df
+comuna_sem <- filter(data_prep(comuna_sem, quote(COMUNA), quote(SEMANA))) 
+colnames(comuna_sem)[6] <- "Caida_ocupante"
+colnames(comuna_sem)[13] <- "SOLO_DANOS"
+```
+
+
+
+
+
+## Funcion de optimización knn:
+```{r}
+mse_k<-function(k, data_tr, data_vl, formula_mod){
+  adv_knn <- knnreg(formula_mod, data=data_tr, k=k) # entrenamiento del modelo
+  y_tr_pred <- predict(adv_knn,data_tr) # predicción de los valores de entrenamiento
+  mse_tr <- mean((data_tr$total - y_tr_pred)^2) # mse del entrenamiento
+  y_vl_pred <- predict(adv_knn,data_vl) # predicción de los valores de prueba
+  mse_vl <- mean((data_vl$total - y_vl_pred)^2) # mse de validación
+  return(list(mse_tr=mse_tr,mse_vl=mse_vl))
+  }
+```
+
+
+## Aplicación del modelo:
+
+## Modelo Barrios
+```{r}
+adj_model_bar <- function(formula, tr_data, val_data){
+  
+  barrios <- unique(tr_data$BARRIO)
+  results <- data.frame()
+
+  for(ba in barrios){
+    temp_tr <- filter(tr_data, BARRIO==ba)
+    temp_va <- filter(val_data, BARRIO==ba)
+    
+    adv_knn<-knnreg(formula,data=temp_tr,k=3) # evalúa el método
+    y_tr_pred<-predict(adv_knn,temp_tr)
+    mse_tr<-mean((temp_tr$total-y_tr_pred)^2) # calcula el mse de entrenamiento
+    y_va_pred<-predict(adv_knn,temp_va)
+    mse_va<-mean((temp_va$total-y_va_pred)^2) # calcula el mse de entrenamiento
+    
+    #añado los resultados a un df
+    temp <- as.data.frame(matrix(c(barrio=ba, MSE_tr=mse_tr,MSE_va= mse_va), ncol=3))
+    temp$Modelo <- list(adv_knn)
+
+    results <- rbind(results, temp)
+  }
+  return(results)
+  
+  
+}
+```
+
+## Modelo Comuna
+```{r}
+adj_model_com <- function(formula, tr_data, val_data){
+  
+  com <- unique(tr_data$COMUNA)
+  results <- data.frame()
+
+  for(co in com){
+    temp_tr <- filter(tr_data, COMUNA==co)
+    temp_va <- filter(val_data, COMUNA==co)
+    
+    adv_knn<-knnreg(formula,data=temp_tr,k=3) # evalúa el método
+    y_tr_pred<-predict(adv_knn,temp_tr)
+    mse_tr<-mean((temp_tr$total-y_tr_pred)^2) # calcula el mse de entrenamiento
+    y_va_pred<-predict(adv_knn,temp_va)
+    mse_va<-mean((temp_va$total-y_va_pred)^2) # calcula el mse de entrenamiento
+    
+    #añado los resultados a un df
+    temp <- as.data.frame(matrix(c(comuna=co, MSE_tr=mse_tr,MSE_va= mse_va), ncol=3))
+    temp$Modelo <- list(adv_knn)
+
+    results <- rbind(results, temp)
+  }
+  return(results)
+  
+  
+}
+```
+
+
+##Aplicacion del modelo por semanas 
+
+### Usando entrenamiento 2014-2017 para barrios
+```{r}
+modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+SOLO_DANOS")
+tr_data <- filter(barrios_sem, PERIODO!=2018)
+va_data <- filter(barrios_sem, PERIODO==2018)
+
+mod_sem_barrio <- adj_model_bar(modelo, tr_data, va_data)
+
+mean(as.numeric(as.character(mod_sem_barrio$V2)))
+mean(as.numeric(as.character(mod_sem_barrio$V3)))
+```
+
+## Usando entrenamiento 2014-2016 para barrios
+```{r}
+modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+MUERTO")
+tr_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)
+va_data <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)
+
+mod_sem_barrio <- adj_model_bar(modelo, tr_data, va_data)
+
+mean(as.numeric(as.character(mod_sem_barrio$V2)))
+mean(as.numeric(as.character(mod_sem_barrio$V3)))
+```
+
+## 
+
+## Usando entrenamiento 2014-2017 para comunas
+```{r}
+modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+MUERTO")
+tr_data <- filter(comuna_sem, PERIODO!=2018 & PERIODO!=2017)
+va_data <- filter(comuna_sem, PERIODO==2018 | PERIODO==2017)
+
+mod_sem_com <- adj_model_com(modelo, tr_data, va_data)
+
+mean(as.numeric(as.character(mod_sem_com$V2)))
+mean(as.numeric(as.character(mod_sem_com$V3)))
+
+```
+
+## Usando entrenamiento 2014-2016 para comunas
+```{r}
+modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+MUERTO")
+tr_data <- filter(comuna_sem, PERIODO!=2018 )
+va_data <- filter(comuna_sem, PERIODO==2018 )
+
+mod_sem_com <- adj_model_com(modelo, tr_data, va_data)
+
+mean(as.numeric(as.character(mod_sem_com$V2)))
+mean(as.numeric(as.character(mod_sem_com$V3)))
+
+```
+
+
+
+
+
+
+```{r}
+modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante")
+
+tr_data <- filter(comuna_sem, PERIODO!=2018)
+va_data <- filter(comuna_sem, PERIODO==2018)
+barrios <- unique(df$COMUNA)
+
+#ba = "Alejandría"
+for(ba in barrios){
+  temp_tr <- filter(tr_data, COMUNA==ba)
+  temp_va <- filter(va_data, COMUNA==ba)
+  n_tr <- dim(temp_tr)[1]
+  MSE<-lapply(1:n_tr,mse_k,data_tr=temp_tr,data_vl = temp_va,formula_mod = modelo)
+  mse_tr<-sapply(1:n_tr,function(x,y){`[[`(y,x)$mse_tr},y=MSE)
+  mse_vl<-sapply(1:n_tr,function(x,y){`[[`(y,x)$mse_vl},y=MSE)
+  num_vec<-1:n_tr
+  plot(num_vec,mse_tr,type="l",col="blue",lwd=2,xlab="k, número de vecinos",
+       ylab="MSE (unidades vendidas)",las=1,xlim=c(0,25),ylim=c(0,50), main=ba)
+  lines(num_vec,mse_vl,col="red",lwd=2)
+  grid()
+  legend("topright",col=c("red","blue"),lwd=2,
+         legend=c("Validación","Entrenamiento"))
+}
+```
+
+```{r}
+num_vec<-1:n_tr
+plot(num_vec,mse_tr,type="l",col="blue",lwd=2,xlab="k, número de vecinos",
+     ylab="MSE (unidades vendidas)",las=1,xlim=c(0,25),ylim=c(0,50))
+lines(num_vec,mse_vl,col="red",lwd=2)
+grid()
+legend("topright",col=c("red","blue"),lwd=2,
+       legend=c("Validación","Entrenamiento"))
+
+```
+
+```{r}
+unique(tr_data$COMUNA)
+```
+
+
+## Comunas:
