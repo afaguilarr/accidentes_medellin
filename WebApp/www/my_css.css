@@ -1,0 +1,386 @@
+@import url("https://fonts.googleapis.com/css?family=Anton&display=swap");
+
+.dropdown{
+  postion: fixed;
+  z-index: 5;
+}
+
+.panel1{
+  postion: fixed;
+  z-index: 1;
+}
+
+#analisis, #about{
+ margin-top: 40px; 
+}
+
+body{
+  background-color: #ffffff;
+  color: white;
+  min-height: 100%;
+}
+h1 {
+	color: #1A1423;
+	font-family: 'Anton', sans-serif;;
+	font-size: 70px;
+	font-weight: 100;
+	letter-spacing: 2px;
+	margin-top: 10px;
+	margin-bottom: 0;
+	text-align: center;
+}
+span {
+  color: #fff;
+	font-family: 'Anton', sans-serif;;
+	font-style: italic;
+	font-weight: 400;
+	line-height: 48px;
+	max-width: 640px;
+	text-align: center;
+}
+p {
+	color: #1A1423;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 100px;
+	margin: 0 auto 40px;
+	font-size: 25px;
+	text-align: center;
+}
+
+div.row > .col-lg-6:nth-child(1){
+  padding-top: -50%;
+}
+
+.videoWrapperWrapper {
+  width: 70%;
+}
+
+.videoWrapper {
+	position: relative;
+	padding-bottom: 56.25%; /* 16:9 */
+	padding-top: 25px;
+	height: 0;
+}
+.videoWrapper iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+nav .container-fluid{
+  background-color: #DE1A1A;
+}
+
+.navbar-default{
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+    border-width: 0;
+}
+nav > div > ul > li > a{
+  background-color: #DE1A1A;
+  font-family: 'Roboto', sans-serif;
+	font-size: 15px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+nav > div > ul > li > ul > li > a{
+  font-family: 'Roboto', sans-serif;
+	font-size: 15px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+	background-color: white;
+}
+
+body div div div .row{
+  margin: 25px 50px;
+}
+
+label {
+  color: #1A1423;
+}
+
+td, th{
+  color: #1A1423;
+}
+
+
+.navbar-default .navbar-brand {
+  background-color: #DE1A1A;
+  color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-size: 20px;
+	font-weight: bold;
+	letter-spacing: 0;
+	text-align: center;
+	font-style: normal;
+}
+
+.navbar-default .navbar-brand:focus, .navbar-default .navbar-brand:hover {
+  background-color: #DE1A1A;
+  color: #fff;
+}
+
+.navbar-default .navbar-nav>li>a{
+  color: white;
+}
+
+.modal-title{
+  margin-top: 10px;
+}
+
+.modal-content{
+ background-color: #ffffff;
+}
+.modal-header {
+    background-color: #DE1A1A;
+    text-align: center;
+}
+.modal-footer {
+    background-color: #DE1A1A;
+}
+select, input{
+  color: black;
+}
+
+table.dataTable thead th{
+  background-color: #DE1A1A;
+  color: white;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  border: none !important;
+}
+
+#DataTables_Table_0_paginate > span > a, #DataTables_Table_1_paginate > span > a,
+#DataTables_Table_2_paginate > span > a, #DataTables_Table_3_paginate > span > a,
+#DataTables_Table_4_paginate > span > a{
+    color: #1A1423 !important;
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    letter-spacing: 3px;
+}
+#DataTables_Table_0_paginate > span > a:hover, #DataTables_Table_1_paginate > span > a:hover,
+#DataTables_Table_2_paginate > span > a:hover, #DataTables_Table_3_paginate > span > a:hover,
+#DataTables_Table_4_paginate > span > a:hover{
+  color: white !important;
+  background-color: #DE1A1A;
+  border: none;
+  background: #DE1A1A;
+}
+#DataTables_Table_0_paginate > span > .current, #DataTables_Table_1_paginate > span > .current,
+#DataTables_Table_2_paginate > span > .current, #DataTables_Table_3_paginate > span > .current,
+#DataTables_Table_4_paginate > span > .current{
+  color: white !important;
+  background-color: #DE1A1A;
+  border: none;
+  background: #DE1A1A;
+}
+#DataTables_Table_0_next, #DataTables_Table_1_next, #DataTables_Table_2_next,
+#DataTables_Table_3_next, #DataTables_Table_4_next{
+  color: #1A1423 !important;
+  letter-spacing: 3px;
+  font-weight: 900;
+  font-family: 'Anton', sans-serif;;
+	text-align: center;
+	text-transform: uppercase;
+}
+#DataTables_Table_0_previous, #DataTables_Table_1_previous, #DataTables_Table_2_previous,
+#DataTables_Table_3_previous, #DataTables_Table_4_previous{
+  color: #1A1423 !important;
+  letter-spacing: 3px;
+  font-weight: 900;
+  font-family: 'Anton', sans-serif;;
+	text-align: center;
+	text-transform: uppercase;
+}
+#DataTables_Table_0_next:hover, #DataTables_Table_1_next:hover,
+#DataTables_Table_2_next:hover, #DataTables_Table_3_next:hover,
+#DataTables_Table_4_next:hover{
+  color: white !important;
+  border: 0;
+  background: #DE1A1A;
+}
+#DataTables_Table_0_previous:hover, #DataTables_Table_1_previous:hover,
+#DataTables_Table_2_previous:hover, #DataTables_Table_3_previous:hover,
+#DataTables_Table_4_previous:hover{
+  color: white !important;
+  border: 0;
+  background: #DE1A1A;
+}
+
+[class="paginate_button previous disabled"]:hover{
+  background: none !important;
+  color: black !important;
+}
+
+[class="paginate_button next disabled"]:hover{
+  background: none !important;
+  color: black !important;
+}
+
+#DataTables_Table_0_paginate, #DataTables_Table_1_paginate,
+#DataTables_Table_2_paginate, #DataTables_Table_3_paginate,
+#DataTables_Table_4_paginate{
+  margin-bottom: 40px;
+}
+
+#maindivnetwork1{
+  margin-top:40px;
+}
+
+#legendnetwork1{
+  width: 35%;
+}
+
+#graphnetwork1 > div.vis-network > canvas{
+  margin-top: 10px;
+  padding-top: 10px;
+  width: 100%;
+}
+
+#maindivnetwork2{
+  margin-top:40px;
+}
+
+#legendnetwork2{
+  width: 35%;
+}
+
+#graphnetwork2 > div.vis-network > canvas{
+  margin-top: 10px;
+  padding-top: 10px;
+  width: 100%;
+}
+
+.tab-pane .active > p{
+  margin-top: 0;
+  margin-bottom: 30px;
+  line-height: 1;
+}
+
+.footer-distributed p{
+	line-height: 20px;
+}
+
+div > div > div span{
+  line-height: 1;
+	font-family: 'Roboto', sans-serif;
+	font-style: normal;
+	/*font-weight: 100px;
+	font-size: 25px;
+	text-align: center;*/
+}
+
+.shiny-flow-layout > div{
+  width: 100% !important;
+  text-align: center;
+}
+
+.shiny-flow-layout > div:nth-child(2){
+  margin-bottom: 20px;
+}
+
+.shiny-input-panel{
+  margin-bottom: 40px;
+}
+
+.selectize-control {
+    margin-bottom: 42px;
+}
+
+#submit_button{
+  color: #fff;
+  background-color: #428bca;
+}
+
+#submit_button:hover{
+  color: #fff;
+  background-color: #428bca;
+}
+
+#satisfaction{
+  text-align: center;
+  color: #1A1423;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
+	margin: 40px auto 40px;
+	font-size: 100px;
+	text-align: center;
+}
+
+
+/* LO QUE SIGUE ES DE OTRO CSS QUE HABIA ENCONTRADO POR AHI */
+
+.footer-distributed{
+  z-index: 10;
+  text-align: center;
+	background-color: #DE1A1A;
+	box-sizing: border-box;
+	width: 100%;
+	font: bold 16px sans-serif;
+	margin-top: 10px;
+	position: fixed;
+	bottom: 0
+}
+
+.footer-distributed .footer-links a{
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+	font-size: 15px;
+	font-weight: normal;
+	letter-spacing: 0;
+	text-align: center;
+}
+
+.footer-distributed .footer-company-name{
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+	font-size: 12px;
+	font-weight: normal;
+	letter-spacing: 0;
+	text-align: center;
+}
+
+.footer-distributed .footer-links a:hover{
+	color:  white;
+  border-color: white;
+}
+
+.footer-distributed p{
+  color: #fff;
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	letter-spacing: 0;
+	margin-top: 25px;
+	margin-bottom: 15px;
+}
+
+.logoWrapper{
+  margin: auto;
+  height: 100%;
+}
+
+.container-fluid > .row{
+  height: 50px;
+}
+
+.footer-distributed .row{
+  margin-right: 0;
+}
+
+.footer-distributed .row .col-sm-1{
+  height: 50px;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+img{
+  height: 100%;
+}
