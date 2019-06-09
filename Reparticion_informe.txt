@@ -1,0 +1,32 @@
+ESTRUCTURA DEL TRABAJO:
+
+-Introducción: -------------SEBASTIAN
+Mención la base de datos usada (referenciar origen).
+Conocimiento previo almenos un trabao que justifique el trabajo
+
+- Justificación/Objetivo -------------- SEBASTIAN
+Tambien pueden mencionar otra cita.
+
+- Analisis descriptivo de las variables: -------- Felipe MUnera, David 
+- Selección de variables
+- Modificaciones a la base datos
+
+1) Creación de modelos predictivos ------------------ Sebastian y Felipe Munera
+Analisis descriptivo,  Justuficaciones.
+
+2) Clustering -------------Felipe Munera y David
+Analisis descriptivo y justificación del clustering
+
+
+-Conclusiones Andres y Todos ayudan 
+
+-Recomendaciones para mejorar los resultados. ------------- David
+Justificar con un articulo de referencia por ejemplo cuales son los facotores que influencias
+la accidentalidad y mencionar los que tenemos.
+
+-Referencias 
+
+
+
+*************VIDEO Y PAG WEB
+Andres 

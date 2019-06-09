@@ -11,9 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-library(dplyr)
-library(ggplot2)
-library(caret) # contiene una implementación del método de los kNN
+library(gamlss)
 ```
 
 
@@ -87,7 +85,11 @@ comuna_sem <- filter(data_prep(comuna_sem, quote(COMUNA), quote(SEMANA)))
 colnames(comuna_sem)[6] <- "Caida_ocupante"
 colnames(comuna_sem)[13] <- "SOLO_DANOS"
 ```
-
+## GRAPH
+```{r}
+ggplot(data = comuna_mes[comuna_mes$COMUNA=="Aranjuez" & comuna_mes$PERIODO==2018,], aes(y= (total), x = MES, color=PERIODO))+
+    geom_point()
+```
 
 
 
@@ -234,7 +236,7 @@ barrios <- unique(df$COMUNA)
 
 #ba = "Alejandría"
 for(ba in barrios){
-  temp_tr <- filter(tr_data, COMUNA==ba)
+  temp_tr <- filter(tr_data, COMUNA==ba)]
   temp_va <- filter(va_data, COMUNA==ba)
   n_tr <- dim(temp_tr)[1]
   MSE<-lapply(1:n_tr,mse_k,data_tr=temp_tr,data_vl = temp_va,formula_mod = modelo)
