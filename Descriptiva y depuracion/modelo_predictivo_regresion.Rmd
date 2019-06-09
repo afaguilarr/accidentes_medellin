@@ -9,7 +9,225 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
 
+
+```{r}
+library(tidyverse)
+library(gamlss)
+```
+
+
+
+## Modelo predictivo:
+
+## Lectura base de datos depurada
+```{r}
+getwd()
+
+df <-  read.csv("df_depurada_1.csv", header = T,stringsAsFactors = FALSE, encoding = "ISO_8859-1",)
+
+#Añadimos semana a la bse de datos:
+df$SEMANA<- as.numeric(strftime(df$FECHA,"%V"))
+```
+
+## Funcion de agrupamiento de datos segun conjunto espacial y escala temporal
+```{r}
+data_prep <- function(dataf, agr_esp, agr_temp){
+  df1 <- dataf%>%
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp),PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  
+  df2 <- dataf%>% #Df con conteo degun clase de accidente
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp), CLASE,PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  df2 <- spread(data = df2, key = CLASE, total) %>%
+    mutate_all(~replace(., is.na(.), 0))
+  
+  df3 <- dataf%>% #Df con conteo degun clase de accidente
+    group_by(!!as.name(agr_esp),!!as.name(agr_temp), GRAVEDAD,PERIODO)%>%
+    summarise(
+      total = n(),
+    )
+  df3 <- spread(data = df3, key = GRAVEDAD, total) %>%
+    mutate_all(~replace(., is.na(.), 0))
+  
+  final_df <- (cbind(df1,df2, df3))
+  
+  return(final_df[,-c(5,6,7,14,15,16)])
+    
+}
+```
+
+## Creacion dfs:
+
+```{r}
+barrios_sem <- df
+
+barrios_sem <- filter(data_prep(barrios_sem, quote(BARRIO), quote(SEMANA)), BARRIO!="0" & BARRIO!="Sin Nombre") 
+colnames(barrios_sem)[6] <- "Caida_ocupante"
+colnames(barrios_sem)[13] <- "SOLO_DANOS"
+
+barrios_mes <- df
+barrios_mes <- filter(data_prep(barrios_mes, quote(BARRIO), quote(MES)), BARRIO!="0" & BARRIO!="Sin Nombre") 
+colnames(barrios_mes)[6] <- "Caida_ocupante"
+colnames(barrios_mes)[13] <- "SOLO_DANOS"
+```
+
+```{r}
+comuna_mes <- df
+comuna_mes <- filter(data_prep(comuna_mes, quote(COMUNA), quote(MES))) 
+colnames(comuna_mes)[6] <- "Caida_ocupante"
+colnames(comuna_mes)[13] <- "SOLO_DANOS"
+
+comuna_sem <- df
+comuna_sem <- filter(data_prep(comuna_sem, quote(COMUNA), quote(SEMANA))) 
+colnames(comuna_sem)[6] <- "Caida_ocupante"
+colnames(comuna_sem)[13] <- "SOLO_DANOS"
+```
+
+
+
+
+## Aplicación del modelo:
+
+## Modelo Barrios
+
+
+
+## Modelo Comuna
+```{r}
+adj_model_com <- function(formula, tr_data, val_data){
+  
+  if("COMUNA" %in% colnames(tr_data)){
+    com <- unique(tr_data$COMUNA)
+  }else{
+    com <- unique(tr_data$BARRIO)
+  }
+  
+  results <- data.frame(matrix(ncol=7, nrow=0))
+
+  for(co in com){
+    if("COMUNA" %in% colnames(tr_data)){
+      
+      temp_tr <- filter(tr_data, COMUNA==co)
+      temp_va <- filter(val_data, COMUNA==co)
+      ub_name <- "Comuna"
+    }
+    else{
+      temp_tr <- filter(tr_data, BARRIO==co)
+      temp_va <- filter(val_data, BARRIO==co)
+      ub_name <- "Barrio"
+    }
+    print(head(temp_tr))
+    
+    model <- gamlss(formula, data = temp_tr)
+    poisson.model<-glm(formula, temp_tr, family = poisson(link = "identity"))
+    
+    print("model?")
+    
+    m.mse_tr <- exp(coef(model, what = 'sigma'))**2
+    mp.mse_tr <- mean((temp_tr$total - predict(poisson.model, new=temp_tr))^2)
+    m.mse_va <- mean((temp_va$total - predict(model,data= temp_va))^2)
+    mp.mse_va <- mean((temp_va$total - predict(poisson.model,new= temp_va))^2)
+    
+
+    row = as.data.frame(matrix(c(co, mp.mse_tr, mp.mse_va, m.mse_tr, m.mse_va), nrow=1))
+    row$modelo_p <-  list(poisson.model)
+    row$modelo <- list(model)
+    
+    results <- rbind(results, row)
+    
+  }
+  colnames(results) <- c(ub_name, "MSE_Poisson_tr", "MSE_Poisson_va", "MSE_tr", "MSE_va", "Reg_poisson", "Reg_lineal")
+  
+  trans <- function(x) as.numeric(as.character(x))
+  
+  results[, 2:5] <- sapply(results[, 2:5], trans)
+  return(results)
+  
+  
+}
+```
+
+## Modelo para las comunas
+###semana
+```{r}
+tr_data <- filter(comuna_sem, PERIODO!=2018)[,1:4]
+va_data <- filter(comuna_sem, PERIODO==2018)[,1:4]
+formula = formula("total~SEMANA+PERIODO")
+
+com_res_sem <- adj_model_com(formula, tr_data, va_data)
+MSE_res_sem <- c(mean(com_res_sem$MSE_Poisson_tr), mean(com_res_sem$MSE_Poisson_va), mean(com_res_sem$MSE_tr), mean(com_res_sem$MSE_va))
+```
+
+###mes
+```{r}
+tr_data <- filter(comuna_mes, PERIODO!=2018)[,1:4]
+va_data <- filter(comuna_mes, PERIODO==2018)[,1:4]
+formula = formula("total~MES+PERIODO")
+
+com_res_mes <- adj_model_com(formula, tr_data, va_data)
+MSE_res_mes <- c(mean(com_res_mes$MSE_Poisson_tr), mean(com_res_mes$MSE_Poisson_va), mean(com_res_mes$MSE_tr), mean(com_res_mes$MSE_va))
+```
+
+## Modelo barrios 
+
+###mes
+
+```{r}
+tr_data <- filter(barrios_mes, PERIODO!=2018)[,1:4]
+va_data <- filter(barrios_mes, PERIODO==2018)[,1:4]
+formula = formula("total~MES+PERIODO")
+
+bar_mes <- adj_model_com(formula, tr_data, va_data)
+MSE_mes_bar <- c(mean(bar_mes$MSE_Poisson_tr), mean(bar_mes$MSE_Poisson_va), mean(bar_mes$MSE_tr), mean(bar_mes$MSE_va))
+```
+
+### sem
+```{r}
+tr_data <- filter(barrios_sem, PERIODO!=2018)[,1:4]
+va_data <- filter(barrios_sem, PERIODO==2018)[,1:4]
+formula = formula("total~SEMANA+PERIODO")
+
+bar_sem <- adj_model_com(formula, tr_data, va_data)
+MSE_sem_bar <- c(mean(bar_sem$MSE_Poisson_tr), mean(bar_sem$MSE_Poisson_va), mean(bar_sem$MSE_tr), mean(bar_sem$MSE_va))
+```
+
+
+## Let's predict naturally
+```{r}
+tr_data <- filter(comuna_sem, PERIODO!=2018, COMUNA=="La Candelaria")[,1:4]
+va_data <- filter(comuna_sem, PERIODO==2018, COMUNA=="La Candelaria")[,1:4]
+
+formula = formula("total~SEMANA+PERIODO")
+
+model <- gamlss(data = tr_data, formula)
+poisson.model<-glm(formula, tr_data, family = poisson(link = "identity"))
+
+
+tr_data$m_predictions <- predict(model, new =tr_data)
+tr_data$m_msres <-  (tr_data$total - tr_data$m_predictions)^2
+tr_data$mp_predictions <- predict(poisson.model, new =tr_data)
+tr_data$mp_msres <-  (tr_data$total - tr_data$mp_predictions)^2
+
+va_data$m_predictions <- predict(model, new =va_data)
+va_data$m_msres <-  (va_data$total - va_data$m_predictions)^2
+va_data$mp_predictions <- predict(poisson.model, new =va_data)
+va_data$mp_msres <-  (va_data$total - va_data$mp_predictions)^2
+
+c(mean(tr_data$m_msres),exp(coef(model, what = 'sigma'))**2,mean(tr_data$mp_msres))
+```
+
+```{r}
+c(mean(va_data$m_msres),mean(va_data$mp_msres))
+```
+
+```{r}
+summary(model)
+summary(poisson.model)
 ```
 

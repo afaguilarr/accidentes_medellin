@@ -11,8 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 ##Carga de paquetes previos
-library(dplyr)
-library(ggplot2)
+
 library(tidyverse)
 ```
 
@@ -23,7 +22,7 @@ getwd() #CHECKEAR QUE EL DIRECTORIO SEA: "/accidentes_medellin/Descriptiva y dep
 
 files_names= list.files(pattern="*.csv", path =  paste(getwd(),"/Datasets",sep=""))
 path <- paste(getwd(),"/Datasets/",files_names,sep="")
-df <- do.call(rbind, lapply(path, function(x) read.csv(x, stringsAsFactors = FALSE,encoding = 'UTF-8', ) )) ##se leen y se juntas las 6 bases de datos usando los nombres de los archivos.
+df <- do.call(rbind, lapply(path, function(x) read.csv(x, stringsAsFactors = FALSE,encoding = 'UTF-8', ) )) ##se leen y se juntas las 5 bases de datos usando los nombres de los archivos.
 ```
 
 
@@ -57,10 +56,10 @@ df2[df2$CLASE == "Choque y Atropello" | df2$CLASE ==  "Choque ",]$CLASE = "Choqu
 ```
 Se encuentran ciertos errores de digitación para los nombres de algunos barrios, se hacen las respectivas modificaciones:
 ```{r}
-barrios <-c("Aures No. 2","Barrio de Jesús","Berlin","Bomboná No. 1","Campo Valdés No.2","Manrique Central No.1","Manrique Central No.2","Moscú No.1","Moscú No.2",
+barrios <-c("Aures No. 2", "Asomadera No. 1" ,"Barrio de Jesús","B. Cerro  El Volador" ,"Berlin","Bomboná No. 1","Campo Valdés No.2","Manrique Central No.1","Manrique Central No.2","Moscú No.1","Moscú No.2",
 "Nueva Villa de La Iguaná","Santa María de Los Ángeles","Santo Domingo Savio No.1","Versalles No.1","Versalles No.2","Villa Liliam")
 
-reemplazo <- c("Aures No.2","Barrios de Jesús","Berlín","Bomboná No.1","Campo Valdés No. 2","Manrique Central No. 1","Manrique Central No. 2","Moscú No. 1","Moscú No. 2",
+reemplazo <- c("Aures No.2", "Asomadera No.1", "Barrios de Jesús","B. Cerro El Volador" ,"Berlín","Bomboná No.1","Campo Valdés No. 2","Manrique Central No. 1","Manrique Central No. 2","Moscú No. 1","Moscú No. 2",
 "Nueva Villa de la Iguaná","Santa María de los Ángeles","Santo Domingo Savio No. 1","Versalles No. 1","Versalles No. 2","Villa Lilliam")
 
 for(i in (1:length(barrios))){
@@ -102,7 +101,7 @@ De momento opto por remover los NA, luego podemos ver si es preferible realiza i
 ##ESta es la lista de los NA y los barrios con NA's o espacios vacios, si desea eliminarlos o hacerles imputación más adelante
 df2[df2 == ""] <- NA
 na_DF <- df2[rowSums(is.na(df2)) > 0,]# Las columnas con NA son diseño (gran mayoria) y clase
-final.df<- na.omit(df2) #DF sin NAs
+final.df<- na.omit(df2[,-17]) #DF sin NAs
 
 print(paste("El numero de datos con NA es:" , as.character(dim(na_DF)[1])))
 
@@ -111,6 +110,7 @@ print(paste("El numero de datos con NA es:" , as.character(dim(na_DF)[1])))
 Tras las modificaciones de arriba de los 209426 datos originales, quedamos con 202462.
 ##Exportación de dfs:
 ```{r}
+
 write.csv(final.df, "df_depurada_1.csv", row.names=F)
 ```
 
@@ -123,6 +123,7 @@ library(cluster)    # clustering algorithms
 library(factoextra)
 ```
 
+## Preparación de los datos
 ```{r}
 library(tidyr)
 cluster_df <- final.df[ ,c(4,8,9,14,15)]
@@ -131,20 +132,28 @@ cluster_df <-  cluster_df%>%
   summarise(
     total = n()
     )
+
 cluster_df <- spread(data = cluster_df, key = CLASE, total)
 cluster_df <- cluster_df%>%
   mutate_all(~replace(., is.na(.), 0))
 
+cluster_df <- filter(cluster_df, BARRIO!="0" & BARRIO!="Sin Nombre")
 rownames(cluster_df) <- unlist(cluster_df[,1])
 cluster_df[,1] <- NULL
 
 
 ```
 
+## Transformación mahalanobis
 ```{r}
-#Elimino 
+C <- chol( var(cluster_df) )
+C <-solve(C)
+y <- as.matrix(cluster_df) %*% C
+cluster_maha<- (kmeans(y, 4))
 ```
 
+### Graficas para elegir numero de cluster
+En general las graficas dan valores significativos para clusters entre 2 y 6
 ```{r}
 fviz_nbclust(cluster_df, kmeans, method = "wss")
 ```
@@ -162,54 +171,132 @@ fviz_gap_stat(gap_stat)
 
 ```{r}
 
-cluster2 <- kmeans(cluster_df, centers = 2, iter.max=1000, nstart=100)
+#cluster2 <- kmeans(cluster_df, centers = 2, iter.max=1000, nstart=100)
 cluster3 <- kmeans(cluster_df, centers = 3, iter.max=1000, nstart=100)
 cluster4 <- kmeans(cluster_df, centers = 4, iter.max=1000, nstart=100)
 cluster5 <- kmeans(cluster_df, centers = 5, iter.max=1000, nstart=100)
 cluster6 <- kmeans(cluster_df, centers = 6, iter.max=1000, nstart=100)
-cluster10 <- kmeans(cluster_df, centers = 10, iter.max=1000, nstart=100)
+cluster7 <- kmeans(cluster_df, centers = 7, iter.max=1000, nstart=100)
 
 ```
 
 ```{r}
-clust.mat <- matrix(c(cluster2$cluster), ncol=1)
+clust.mat <- matrix(c(cluster3$cluster), ncol=1)
 rownames(clust.mat) <- names(cluster2$cluster)
-clust.mat <- cbind(clust.mat, cluster3$cluster, cluster4$cluster,cluster5$cluster,cluster6$cluster, cluster10$cluster)
+clust.mat <- cbind(clust.mat, cluster4$cluster,cluster5$cluster,cluster6$cluster, cluster7$cluster)
 
-colnames(clust.mat) <- lapply(c("C2","C3","C4","C5","C6","C10"),paste,"G", sep="")
+colnames(clust.mat) <- lapply(c("C3","C4","C5","C6","C7"),paste,"G", sep="")
 clust.mat <- as.data.frame(clust.mat)
 ```
 
 
 ```{r}
+cluster_df$Total <- rowSums(cluster_df[,1:6])
 grouped_df <- merge(cluster_df, clust.mat,by=0,all = T)
+colnames(grouped_df)[1] <- "BARRIO"
+
+
 
 grouped_df%>%
-  group_by(C6G)%>%
+  group_by(C5G)%>%
   summarise(
     Atropellos = mean(Atropello),
     Caidas = mean(`Caída Ocupante`),
     Choques = mean(Choque),
     Volcamientos = mean(Volcamiento),
     Otros = mean(Otro),
-    number = n(),
-    Incendios = mean(Incendio)
+    number = n()
   )
 ```
 
 ```{r}
+grouped_df[grouped_df$C5G==4,]
+```
+
+
+```{r}
 grouped_df%>%
-  group_by(CG)%>%
+  group_by(C5G)%>%
   summarise(
     Atropellos = sd(Atropello),
     Caidas = sd(`Caída Ocupante`),
     Choques = sd(Choque),
-    Incendios = sd(Incendio),
     Volcamientos = sd(Volcamiento),
     Otros = sd(Otro)
   )
 ```
 
+
+```{r}
+df.tidy <- grouped_df[,c(-5,-8)]
+df.tidy <- gather(df.tidy, "CLASE", "TOTAL", 2:6)
+attach(df.tidy)
+```
+
+
+##BOXPLOTS
+
+
+
+##3 GRUPOS
+```{r}
+clases <- unique(CLASE)
+for(cl in clases){
+  a <- ggplot(df.tidy[CLASE == cl,], aes(x=as.character(C3G), y=TOTAL, fill = as.character(C3G)))+
+    geom_boxplot(notch=F)+
+    labs(fill = "Grupo", x = "Grupo", y = cl)
+  print(a)
+}
+  
+```
+## 4 grupos
+```{r}
+clases <- unique(CLASE)
+for(cl in clases){
+  a <- ggplot(df.tidy[CLASE == cl,], aes(x=as.character(C4G), y=TOTAL, fill = as.character(C4G)))+
+    geom_boxplot(notch=F)+
+    labs(fill = "Grupo", x = "Grupo", y = cl)
+  print(a)
+}
+  
+```
+
+## 5 grupos
+```{r}
+clases <- unique(CLASE)
+for(cl in clases){
+  a <- ggplot(df.tidy[CLASE == cl,], aes(x=as.character(C5G), y=TOTAL, fill = as.character(C5G)))+
+    geom_boxplot(notch=F)+
+    labs(fill = "Grupo", x = "Grupo", y = cl)
+  print(a)
+}
+  
+```
+
+
+## 6 grupos
+```{r}
+clases <- unique(CLASE)
+for(cl in clases){
+  a <- ggplot(df.tidy[CLASE == cl,], aes(x=as.character(C6G), y=TOTAL, fill = as.character(C6G)))+
+    geom_boxplot(notch=F)+
+    labs(fill = "Grupo", x = "Grupo", y = cl)
+  print(a)
+}
+  
+```
+
+## 7 grupos
+```{r}
+clases <- unique(CLASE)
+for(cl in clases){
+  a <- ggplot(df.tidy[CLASE == cl,], aes(x=as.character(C7G), y=TOTAL, fill = as.character(C7G)))+
+    geom_boxplot(notch=F)+
+    labs(fill = "Grupo", x = "Grupo", y = cl)
+  print(a)
+}
+  
+```
 ```{r}
 source("maps_scripts.R")
 medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
