@@ -17,7 +17,7 @@ init_pkgs <- function()
 {
   pkgs <- c("mvtnorm", "ggplot2", "MBESS", "Matrix", "ks", 
             "caret", "rgdal", "leaflet", "knitr","rmarkdown", 
-            "PKI", "packrat", "ggmap", "raster", "tidyverse")
+            "PKI", "packrat", "raster", "tidyverse")
   lapply(pkgs, pkg_test_and_load)
 }
 
@@ -41,6 +41,5 @@ init_map <- function(data_location, colores=NA)
   }
 
 }
-medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
-init_map(medellin_map_location)
+
 

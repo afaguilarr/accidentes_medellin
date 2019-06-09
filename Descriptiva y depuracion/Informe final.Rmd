@@ -299,7 +299,6 @@ for(cl in clases){
 ```
 ```{r}
 source("maps_scripts.R")
-medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
-init_map(medellin_map_location)
+
 ```
 
