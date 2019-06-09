@@ -199,7 +199,7 @@ grouped_df%>%
 
 ```{r}
 grouped_df%>%
-  group_by(CG)%>%
+  group_by(C6G)%>%
   summarise(
     Atropellos = sd(Atropello),
     Caidas = sd(`Caída Ocupante`),
@@ -212,7 +212,6 @@ grouped_df%>%
 
 ```{r}
 source("maps_scripts.R")
-medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
-init_map(medellin_map_location)
+
 ```
 
