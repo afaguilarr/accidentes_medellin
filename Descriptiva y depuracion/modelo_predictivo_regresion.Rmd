@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(gamlss)
+library(MASS)
 ```
 
 
@@ -98,10 +99,11 @@ colnames(comuna_sem)[13] <- "SOLO_DANOS"
 
 
 
-## Modelo Comuna
+## Función de modelo
 ```{r}
 adj_model_com <- function(formula, tr_data, val_data){
   
+  ## determina si el modelo es para Comunas o Barrios
   if("COMUNA" %in% colnames(tr_data)){
     com <- unique(tr_data$COMUNA)
   }else{
@@ -122,56 +124,107 @@ adj_model_com <- function(formula, tr_data, val_data){
       temp_va <- filter(val_data, BARRIO==co)
       ub_name <- "Barrio"
     }
-    print(head(temp_tr))
+
     
-    model <- gamlss(formula, data = temp_tr)
+    #model <- gamlss(formula = formula, data = temp_tr)
     poisson.model<-glm(formula, temp_tr, family = poisson(link = "identity"))
     
-    print("model?")
     
-    m.mse_tr <- exp(coef(model, what = 'sigma'))**2
+    #m.mse_tr <- exp(coef(model, what = 'sigma'))**2
     mp.mse_tr <- mean((temp_tr$total - predict(poisson.model, new=temp_tr))^2)
-    m.mse_va <- mean((temp_va$total - predict(model,data= temp_va))^2)
+    #m.mse_va <- mean((temp_va$total - predict(model,data= temp_va))^2)
     mp.mse_va <- mean((temp_va$total - predict(poisson.model,new= temp_va))^2)
     
-
-    row = as.data.frame(matrix(c(co, mp.mse_tr, mp.mse_va, m.mse_tr, m.mse_va), nrow=1))
+    
+    row = as.data.frame(matrix(c(co, mp.mse_tr, mp.mse_va), nrow=1))
     row$modelo_p <-  list(poisson.model)
-    row$modelo <- list(model)
+    #row$modelo <- list(model)
     
     results <- rbind(results, row)
     
   }
-  colnames(results) <- c(ub_name, "MSE_Poisson_tr", "MSE_Poisson_va", "MSE_tr", "MSE_va", "Reg_poisson", "Reg_lineal")
+  colnames(results) <- c(ub_name, "MSE_Poisson_tr", "MSE_Poisson_va","Reg_poisson")
   
   trans <- function(x) as.numeric(as.character(x))
   
-  results[, 2:5] <- sapply(results[, 2:5], trans)
+  results[, 2:3] <- sapply(results[, 2:3], trans)
   return(results)
   
   
 }
 ```
 
+
+## GRAPH
+```{r}
+com <- unique(comuna_mes$COMUNA)
+
+for(co in com){
+  p<-ggplot(data = comuna_mes[comuna_mes$COMUNA==co,], aes(y= (total), x = MES, color=factor(PERIODO), shape= factor(PERIODO)))+ labs(title = co)+geom_point()+
+     geom_line()+ theme(legend.position="top")
+    
+  print(p)
+}
+
+  
+```
+
+```{r}
+comuna_ano <- comuna_mes%>%
+  group_by(PERIODO, COMUNA)%>%
+  summarise(
+  totalsito = sum(total)
+  )
+
+comuna_ano <- comuna_ano[order(comuna_ano$COMUNA),]
+comuna_ano
+ggplot(data = comuna_ano, aes(x = COMUNA, y= totalsito, fill = factor(PERIODO)))+
+  geom_bar(stat="identity", position=position_dodge())+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
 ## Modelo para las comunas
-###semana
+###semana 
+This one works 
+Sin periodo es mejor
 ```{r}
 tr_data <- filter(comuna_sem, PERIODO!=2018)[,1:4]
 va_data <- filter(comuna_sem, PERIODO==2018)[,1:4]
-formula = formula("total~SEMANA+PERIODO")
+#tr_data <- filter(comuna_sem, PERIODO!=2018 & PERIODO!=2017)[,1:4]
+#va_data <- filter(comuna_sem, PERIODO==2018 | PERIODO==2017)[,1:4]
 
-com_res_sem <- adj_model_com(formula, tr_data, va_data)
-MSE_res_sem <- c(mean(com_res_sem$MSE_Poisson_tr), mean(com_res_sem$MSE_Poisson_va), mean(com_res_sem$MSE_tr), mean(com_res_sem$MSE_va))
+formula = formula("total~SEMANA")
+
+com_sem_mod2 <- adj_model_com(formula, tr_data, va_data)
+#MSE_res_sem <- c(mean(com_res_sem$MSE_Poisson_tr), mean(com_res_sem$MSE_Poisson_va))
+
+```
+```{r}
+#MSE_res_sem
+save(com_sem_mod2, file="./Modelos/comuna_sem_mod2.RData")
 ```
 
-###mes
-```{r}
-tr_data <- filter(comuna_mes, PERIODO!=2018)[,1:4]
-va_data <- filter(comuna_mes, PERIODO==2018)[,1:4]
-formula = formula("total~MES+PERIODO")
 
-com_res_mes <- adj_model_com(formula, tr_data, va_data)
-MSE_res_mes <- c(mean(com_res_mes$MSE_Poisson_tr), mean(com_res_mes$MSE_Poisson_va), mean(com_res_mes$MSE_tr), mean(com_res_mes$MSE_va))
+
+###mes
+Involucrar el periodo empeora el modelo
+no cumple con 2018-2017 validacion
+```{r}
+tr_data <- filter(comuna_mes, PERIODO!=2018)[,1:12]
+va_data <- filter(comuna_mes, PERIODO==2018)[,1:12]
+tr_data <- filter(comuna_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
+va_data <- filter(comuna_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
+
+formula = formula("total~MES")
+
+com_mes_mod1 <- adj_model_com(formula, tr_data, va_data)
+#MSE_res_mes <- c(mean(com_res_mes$MSE_Poisson_tr), mean(com_res_mes$MSE_Poisson_va), mean(com_res_mes$MSE_tr), mean(com_res_mes$MSE_va))
+```
+
+```{r}
+#MSE_res_mes
+save(com_mes_mod1, file="./Modelos/comuna_mes_mod1.RData")
 ```
 
 ## Modelo barrios 
@@ -181,25 +234,44 @@ MSE_res_mes <- c(mean(com_res_mes$MSE_Poisson_tr), mean(com_res_mes$MSE_Poisson_
 ```{r}
 tr_data <- filter(barrios_mes, PERIODO!=2018)[,1:4]
 va_data <- filter(barrios_mes, PERIODO==2018)[,1:4]
-formula = formula("total~MES+PERIODO")
+tr_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
+va_data <- filter(barrios_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
 
-bar_mes <- adj_model_com(formula, tr_data, va_data)
-MSE_mes_bar <- c(mean(bar_mes$MSE_Poisson_tr), mean(bar_mes$MSE_Poisson_va), mean(bar_mes$MSE_tr), mean(bar_mes$MSE_va))
+
+formula = formula("total~MES")
+
+bar_mes_mod1 <- adj_model_com(formula, tr_data, va_data)
+#MSE_mes_bar <- c(mean(bar_mes$MSE_Poisson_tr), mean(bar_mes$MSE_Poisson_va))
+```
+
+```{r}
+#MSE_mes_bar
+save(bar_mes_mod1, file="./Modelos/barrio_mes_mod1.RData")
 ```
 
 ### sem
+
+El modelo sin periodo nota ser considerablemente mejor al que lo invlolucra para los que invlolucran  
 ```{r}
 tr_data <- filter(barrios_sem, PERIODO!=2018)[,1:4]
 va_data <- filter(barrios_sem, PERIODO==2018)[,1:4]
-formula = formula("total~SEMANA+PERIODO")
 
-bar_sem <- adj_model_com(formula, tr_data, va_data)
-MSE_sem_bar <- c(mean(bar_sem$MSE_Poisson_tr), mean(bar_sem$MSE_Poisson_va), mean(bar_sem$MSE_tr), mean(bar_sem$MSE_va))
+#tr_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)[,1:4]
+#va_data <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)[,1:4]
+formula = formula("total~SEMANA")
+
+bar_sem_mod2 <- adj_model_com(formula, tr_data, va_data)
+#MSE_sem_bar <- c(mean(bar_sem$MSE_Poisson_tr), mean(bar_sem$MSE_Poisson_va), mean(bar_sem$MSE_tr), mean(bar_sem$MSE_va))
+```
+```{r}
+#MSE_sem_bar
+save(bar_sem_mod2, file="./Modelos/barrio_sem_mod2.RData")
 ```
 
 
 ## Let's predict naturally
 ```{r}
+if(F){
 tr_data <- filter(comuna_sem, PERIODO!=2018, COMUNA=="La Candelaria")[,1:4]
 va_data <- filter(comuna_sem, PERIODO==2018, COMUNA=="La Candelaria")[,1:4]
 
@@ -220,14 +292,8 @@ va_data$mp_predictions <- predict(poisson.model, new =va_data)
 va_data$mp_msres <-  (va_data$total - va_data$mp_predictions)^2
 
 c(mean(tr_data$m_msres),exp(coef(model, what = 'sigma'))**2,mean(tr_data$mp_msres))
+}
 ```
 
-```{r}
-c(mean(va_data$m_msres),mean(va_data$mp_msres))
-```
 
-```{r}
-summary(model)
-summary(poisson.model)
-```
 

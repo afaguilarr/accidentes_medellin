@@ -21,6 +21,7 @@ library(tidyverse)
 getwd() #CHECKEAR QUE EL DIRECTORIO SEA: "/accidentes_medellin/Descriptiva y depuracion"
 
 files_names= list.files(pattern="*.csv", path =  paste(getwd(),"/Datasets",sep=""))
+files_names <- files_names[-6]
 path <- paste(getwd(),"/Datasets/",files_names,sep="")
 df <- do.call(rbind, lapply(path, function(x) read.csv(x, stringsAsFactors = FALSE,encoding = 'UTF-8', ) )) ##se leen y se juntas las 5 bases de datos usando los nombres de los archivos.
 ```
@@ -125,7 +126,7 @@ library(factoextra)
 
 ## Preparación de los datos
 ```{r}
-library(tidyr)
+
 cluster_df <- final.df[ ,c(4,8,9,14,15)]
 cluster_df <-  cluster_df%>%
   group_by(BARRIO,CLASE)%>%
@@ -144,13 +145,6 @@ cluster_df[,1] <- NULL
 
 ```
 
-## Transformación mahalanobis
-```{r}
-C <- chol( var(cluster_df) )
-C <-solve(C)
-y <- as.matrix(cluster_df) %*% C
-cluster_maha<- (kmeans(y, 4))
-```
 
 ### Graficas para elegir numero de cluster
 En general las graficas dan valores significativos para clusters entre 2 y 6
@@ -170,20 +164,20 @@ fviz_gap_stat(gap_stat)
 ```
 
 ```{r}
-
+library(flexclust)
 #cluster2 <- kmeans(cluster_df, centers = 2, iter.max=1000, nstart=100)
-cluster3 <- kmeans(cluster_df, centers = 3, iter.max=1000, nstart=100)
-cluster4 <- kmeans(cluster_df, centers = 4, iter.max=1000, nstart=100)
-cluster5 <- kmeans(cluster_df, centers = 5, iter.max=1000, nstart=100)
-cluster6 <- kmeans(cluster_df, centers = 6, iter.max=1000, nstart=100)
-cluster7 <- kmeans(cluster_df, centers = 7, iter.max=1000, nstart=100)
+cluster3 <- kcca(cluster_df, k = 3,  family=kccaFamily("kmeans"))
+cluster4 <- kcca(cluster_df, k = 4,  family=kccaFamily("kmeans"))
+cluster5 <- kcca(cluster_df, k = 5,  family=kccaFamily("kmeans"))
+cluster6 <- kcca(cluster_df, k = 6,  family=kccaFamily("kmeans"))
+cluster7 <- kcca(cluster_df, k = 7,  family=kccaFamily("kmeans"))
 
 ```
 
 ```{r}
-clust.mat <- matrix(c(cluster3$cluster), ncol=1)
-rownames(clust.mat) <- names(cluster2$cluster)
-clust.mat <- cbind(clust.mat, cluster4$cluster,cluster5$cluster,cluster6$cluster, cluster7$cluster)
+clust.mat <- matrix(c(cluster3@cluster), ncol=1)
+rownames(clust.mat) <- names(cluster3@cluster)
+clust.mat <- cbind(clust.mat, cluster4@cluster,cluster5@cluster,cluster6@cluster, cluster7@cluster)
 
 colnames(clust.mat) <- lapply(c("C3","C4","C5","C6","C7"),paste,"G", sep="")
 clust.mat <- as.data.frame(clust.mat)
@@ -198,7 +192,7 @@ colnames(grouped_df)[1] <- "BARRIO"
 
 
 grouped_df%>%
-  group_by(C5G)%>%
+  group_by(C4G)%>%
   summarise(
     Atropellos = mean(Atropello),
     Caidas = mean(`Caída Ocupante`),
@@ -210,7 +204,7 @@ grouped_df%>%
 ```
 
 ```{r}
-grouped_df[grouped_df$C5G==4,]
+grouped_df[grouped_df$C4G==1,]
 ```
 
 
@@ -299,6 +293,7 @@ for(cl in clases){
 ```
 ```{r}
 source("maps_scripts.R")
-
+medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
+init_map(medellin_map_location)
 ```
 

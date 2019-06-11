@@ -172,7 +172,8 @@ adj_model_com <- function(formula, tr_data, val_data){
 
 ### Usando entrenamiento 2014-2017 para barrios
 ```{r}
-modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+SOLO_DANOS")
+library(caret)
+modelo<-formula("total~SEMANA+PERIODO")
 tr_data <- filter(barrios_sem, PERIODO!=2018)
 va_data <- filter(barrios_sem, PERIODO==2018)
 
@@ -184,7 +185,7 @@ mean(as.numeric(as.character(mod_sem_barrio$V3)))
 
 ## Usando entrenamiento 2014-2016 para barrios
 ```{r}
-modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+MUERTO")
+modelo<-formula("total~SEMANA+PERIODO")
 tr_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)
 va_data <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)
 
@@ -198,7 +199,7 @@ mean(as.numeric(as.character(mod_sem_barrio$V3)))
 
 ## Usando entrenamiento 2014-2017 para comunas
 ```{r}
-modelo<-formula("total~SEMANA+PERIODO+Atropello+Choque+Incendio+Otro+Volcamiento+Caida_ocupante+HERIDO+MUERTO")
+modelo<-formula("total~SEMANA+PERIODO")
 tr_data <- filter(comuna_sem, PERIODO!=2018 & PERIODO!=2017)
 va_data <- filter(comuna_sem, PERIODO==2018 | PERIODO==2017)
 
