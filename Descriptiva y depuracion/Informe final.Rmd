@@ -103,12 +103,12 @@ De momento opto por remover los NA, luego podemos ver si es preferible realiza i
 df2[df2 == ""] <- NA
 na_DF <- df2[rowSums(is.na(df2)) > 0,]# Las columnas con NA son diseño (gran mayoria) y clase
 final.df<- na.omit(df2[,-17]) #DF sin NAs
-
+final.df <- filter(final.df, BARRIO!="0" & BARRIO!="Sin Nombre") 
 print(paste("El numero de datos con NA es:" , as.character(dim(na_DF)[1])))
 
 ```
 
-Tras las modificaciones de arriba de los 209426 datos originales, quedamos con 202462.
+Tras las modificaciones de arriba de los 209426 datos originales, quedamos con 203483.
 ##Exportación de dfs:
 ```{r}
 
@@ -291,9 +291,5 @@ for(cl in clases){
 }
   
 ```
-```{r}
-source("maps_scripts.R")
-medellin_map_location <- "./Datasets/Barrio_Vereda/Barrio_Vereda.shp"
-init_map(medellin_map_location)
-```
+
 

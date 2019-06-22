@@ -1,0 +1,24 @@
+---
+title: "Modelo regresion dias"
+author: "J_Munera"
+date: "6/22/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(gamlss)
+library(MASS)
+```
+
+## Lectura base por días:
+
+```{r}
+
+```
+

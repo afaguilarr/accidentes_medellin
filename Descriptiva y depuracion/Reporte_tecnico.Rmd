@@ -1,0 +1,59 @@
+---
+title: "Reporte Tecnico"
+author: "J_Munera"
+date: "6/11/2019"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+##Carga de paquetes previos
+
+library(tidyverse)
+```
+
+##Depuración de la base de datos
+```{r}
+##Lectura de las 5 bases de datos desde el drectorio
+#getwd() #CHECKEAR QUE EL DIRECTORIO SEA: "/accidentes_medellin/Descriptiva y depuracion"
+
+files_names= list.files(pattern="*.csv", path =  paste(getwd(),"/Datasets",sep=""))
+files_names <- files_names[-6]
+path <- paste(getwd(),"/Datasets/",files_names,sep="")
+df <- do.call(rbind, lapply(path, function(x) read.csv(x, stringsAsFactors = FALSE,encoding = 'UTF-8', ) )) ##se leen y se juntas las 5 bases de datos usando los nombres de los archivos.
+```
+
+
+```{r setup, include=FALSE}
+#df$RADICADO <- as.character(df$RADICADO)
+#Se cambia el nombre de la primera columna
+df<- df %>% rename(OBJECTID = X.U.FEFF.OBJECTID)
+
+#Cambios de tpo de datos en la base
+df<- df %>% 
+    mutate_at(vars(starts_with("RADIC")),funs(as.character)) %>%
+    mutate_at(vars(starts_with("OBJECT")),funs(as.character))
+```
+
+
+Dado que el presente trabajo se centrara sólo en las zonas urbanas de Medellín se procede trabaja solo con los registros cuyo GEOCOD  corresponda a "ZONA RURAL".
+
+```{r}
+df2 <- df[df$TIPO_GEOCOD!="ZONA RURAL",]
+##Se crea df2, nueva base de datos con las depuraciones respectivas.
+```
+
+
+Se considera que "CON MUERTO" es equivalente a "MUERTO" para la columna "GRAVEDAD":
+Se considera que "Caida Ocupante" es equivalente a "Caida de Ocupante" en la columna "CLASE"
+```{r}
+
+df2[df2$GRAVEDAD == "CON MUERTO" ,]$GRAVEDAD <- "MUERTO"
+df2[df2$CLASE == "Caida Ocupante" | df2$CLASE == "Caída de Ocupante" ,]$CLASE <- "Caída Ocupante"
+df2[df2$CLASE == "Choque y Atropello" | df2$CLASE ==  "Choque ",]$CLASE = "Choque"
+```

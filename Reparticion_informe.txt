@@ -1,17 +1,17 @@
 ESTRUCTURA DEL TRABAJO:
 
--Introducción: -------------SEBASTIAN
+-Introducción: ------------- Introducción 
 Mención la base de datos usada (referenciar origen).
 Conocimiento previo almenos un trabao que justifique el trabajo
 
-- Justificación/Objetivo -------------- SEBASTIAN
+- Justificación/Objetivo -------------- David
 Tambien pueden mencionar otra cita.
 
 - Analisis descriptivo de las variables: -------- Felipe MUnera, David 
 - Selección de variables
 - Modificaciones a la base datos
 
-1) Creación de modelos predictivos ------------------ Sebastian y Felipe Munera
+1) Creación de modelos predictivos ------------------ Juan Felipe y Felipe Munera
 Analisis descriptivo,  Justuficaciones.
 
 2) Clustering -------------Felipe Munera y David
