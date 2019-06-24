@@ -1,0 +1,961 @@
+"COMUNA","MES","PERIODO","total"
+"Aranjuez",1,2014,189
+"Aranjuez",1,2015,195
+"Aranjuez",1,2016,198
+"Aranjuez",1,2017,196
+"Aranjuez",1,2018,188
+"Aranjuez",2,2014,204
+"Aranjuez",2,2015,202
+"Aranjuez",2,2016,226
+"Aranjuez",2,2017,212
+"Aranjuez",2,2018,189
+"Aranjuez",3,2014,245
+"Aranjuez",3,2015,233
+"Aranjuez",3,2016,211
+"Aranjuez",3,2017,202
+"Aranjuez",3,2018,190
+"Aranjuez",4,2014,223
+"Aranjuez",4,2015,200
+"Aranjuez",4,2016,187
+"Aranjuez",4,2017,170
+"Aranjuez",4,2018,187
+"Aranjuez",5,2014,231
+"Aranjuez",5,2015,233
+"Aranjuez",5,2016,223
+"Aranjuez",5,2017,257
+"Aranjuez",5,2018,199
+"Aranjuez",6,2014,196
+"Aranjuez",6,2015,172
+"Aranjuez",6,2016,185
+"Aranjuez",6,2017,213
+"Aranjuez",6,2018,184
+"Aranjuez",7,2014,223
+"Aranjuez",7,2015,245
+"Aranjuez",7,2016,222
+"Aranjuez",7,2017,201
+"Aranjuez",7,2018,204
+"Aranjuez",8,2014,215
+"Aranjuez",8,2015,227
+"Aranjuez",8,2016,206
+"Aranjuez",8,2017,223
+"Aranjuez",8,2018,241
+"Aranjuez",9,2014,210
+"Aranjuez",9,2015,245
+"Aranjuez",9,2016,213
+"Aranjuez",9,2017,212
+"Aranjuez",9,2018,194
+"Aranjuez",10,2014,211
+"Aranjuez",10,2015,212
+"Aranjuez",10,2016,212
+"Aranjuez",10,2017,184
+"Aranjuez",10,2018,175
+"Aranjuez",11,2014,171
+"Aranjuez",11,2015,208
+"Aranjuez",11,2016,221
+"Aranjuez",11,2017,163
+"Aranjuez",11,2018,175
+"Aranjuez",12,2014,213
+"Aranjuez",12,2015,208
+"Aranjuez",12,2016,234
+"Aranjuez",12,2017,202
+"Aranjuez",12,2018,215
+"Belén",1,2014,208
+"Belén",1,2015,165
+"Belén",1,2016,228
+"Belén",1,2017,211
+"Belén",1,2018,216
+"Belén",2,2014,194
+"Belén",2,2015,229
+"Belén",2,2016,250
+"Belén",2,2017,246
+"Belén",2,2018,199
+"Belén",3,2014,263
+"Belén",3,2015,208
+"Belén",3,2016,261
+"Belén",3,2017,266
+"Belén",3,2018,201
+"Belén",4,2014,225
+"Belén",4,2015,220
+"Belén",4,2016,239
+"Belén",4,2017,229
+"Belén",4,2018,219
+"Belén",5,2014,226
+"Belén",5,2015,226
+"Belén",5,2016,237
+"Belén",5,2017,232
+"Belén",5,2018,227
+"Belén",6,2014,221
+"Belén",6,2015,181
+"Belén",6,2016,262
+"Belén",6,2017,251
+"Belén",6,2018,211
+"Belén",7,2014,231
+"Belén",7,2015,232
+"Belén",7,2016,268
+"Belén",7,2017,265
+"Belén",7,2018,228
+"Belén",8,2014,204
+"Belén",8,2015,264
+"Belén",8,2016,289
+"Belén",8,2017,258
+"Belén",8,2018,236
+"Belén",9,2014,231
+"Belén",9,2015,251
+"Belén",9,2016,258
+"Belén",9,2017,286
+"Belén",9,2018,235
+"Belén",10,2014,219
+"Belén",10,2015,226
+"Belén",10,2016,298
+"Belén",10,2017,235
+"Belén",10,2018,201
+"Belén",11,2014,191
+"Belén",11,2015,226
+"Belén",11,2016,222
+"Belén",11,2017,244
+"Belén",11,2018,230
+"Belén",12,2014,208
+"Belén",12,2015,242
+"Belén",12,2016,245
+"Belén",12,2017,216
+"Belén",12,2018,243
+"Buenos Aires",1,2014,103
+"Buenos Aires",1,2015,107
+"Buenos Aires",1,2016,142
+"Buenos Aires",1,2017,113
+"Buenos Aires",1,2018,101
+"Buenos Aires",2,2014,119
+"Buenos Aires",2,2015,129
+"Buenos Aires",2,2016,123
+"Buenos Aires",2,2017,118
+"Buenos Aires",2,2018,116
+"Buenos Aires",3,2014,145
+"Buenos Aires",3,2015,139
+"Buenos Aires",3,2016,139
+"Buenos Aires",3,2017,138
+"Buenos Aires",3,2018,140
+"Buenos Aires",4,2014,98
+"Buenos Aires",4,2015,133
+"Buenos Aires",4,2016,137
+"Buenos Aires",4,2017,133
+"Buenos Aires",4,2018,127
+"Buenos Aires",5,2014,139
+"Buenos Aires",5,2015,135
+"Buenos Aires",5,2016,127
+"Buenos Aires",5,2017,147
+"Buenos Aires",5,2018,142
+"Buenos Aires",6,2014,146
+"Buenos Aires",6,2015,119
+"Buenos Aires",6,2016,126
+"Buenos Aires",6,2017,135
+"Buenos Aires",6,2018,134
+"Buenos Aires",7,2014,146
+"Buenos Aires",7,2015,126
+"Buenos Aires",7,2016,141
+"Buenos Aires",7,2017,136
+"Buenos Aires",7,2018,105
+"Buenos Aires",8,2014,147
+"Buenos Aires",8,2015,165
+"Buenos Aires",8,2016,152
+"Buenos Aires",8,2017,123
+"Buenos Aires",8,2018,120
+"Buenos Aires",9,2014,124
+"Buenos Aires",9,2015,122
+"Buenos Aires",9,2016,151
+"Buenos Aires",9,2017,145
+"Buenos Aires",9,2018,133
+"Buenos Aires",10,2014,120
+"Buenos Aires",10,2015,127
+"Buenos Aires",10,2016,136
+"Buenos Aires",10,2017,115
+"Buenos Aires",10,2018,131
+"Buenos Aires",11,2014,143
+"Buenos Aires",11,2015,106
+"Buenos Aires",11,2016,132
+"Buenos Aires",11,2017,131
+"Buenos Aires",11,2018,104
+"Buenos Aires",12,2014,121
+"Buenos Aires",12,2015,148
+"Buenos Aires",12,2016,119
+"Buenos Aires",12,2017,138
+"Buenos Aires",12,2018,134
+"Castilla",1,2014,287
+"Castilla",1,2015,286
+"Castilla",1,2016,321
+"Castilla",1,2017,320
+"Castilla",1,2018,340
+"Castilla",2,2014,298
+"Castilla",2,2015,320
+"Castilla",2,2016,363
+"Castilla",2,2017,393
+"Castilla",2,2018,308
+"Castilla",3,2014,402
+"Castilla",3,2015,360
+"Castilla",3,2016,385
+"Castilla",3,2017,421
+"Castilla",3,2018,379
+"Castilla",4,2014,338
+"Castilla",4,2015,315
+"Castilla",4,2016,356
+"Castilla",4,2017,366
+"Castilla",4,2018,357
+"Castilla",5,2014,402
+"Castilla",5,2015,323
+"Castilla",5,2016,357
+"Castilla",5,2017,358
+"Castilla",5,2018,372
+"Castilla",6,2014,328
+"Castilla",6,2015,308
+"Castilla",6,2016,341
+"Castilla",6,2017,375
+"Castilla",6,2018,396
+"Castilla",7,2014,341
+"Castilla",7,2015,325
+"Castilla",7,2016,330
+"Castilla",7,2017,323
+"Castilla",7,2018,336
+"Castilla",8,2014,344
+"Castilla",8,2015,366
+"Castilla",8,2016,379
+"Castilla",8,2017,389
+"Castilla",8,2018,362
+"Castilla",9,2014,355
+"Castilla",9,2015,356
+"Castilla",9,2016,359
+"Castilla",9,2017,367
+"Castilla",9,2018,346
+"Castilla",10,2014,380
+"Castilla",10,2015,341
+"Castilla",10,2016,394
+"Castilla",10,2017,373
+"Castilla",10,2018,354
+"Castilla",11,2014,341
+"Castilla",11,2015,349
+"Castilla",11,2016,387
+"Castilla",11,2017,354
+"Castilla",11,2018,335
+"Castilla",12,2014,388
+"Castilla",12,2015,351
+"Castilla",12,2016,325
+"Castilla",12,2017,405
+"Castilla",12,2018,375
+"Doce de Octubre",1,2014,83
+"Doce de Octubre",1,2015,92
+"Doce de Octubre",1,2016,80
+"Doce de Octubre",1,2017,79
+"Doce de Octubre",1,2018,95
+"Doce de Octubre",2,2014,97
+"Doce de Octubre",2,2015,93
+"Doce de Octubre",2,2016,76
+"Doce de Octubre",2,2017,83
+"Doce de Octubre",2,2018,82
+"Doce de Octubre",3,2014,109
+"Doce de Octubre",3,2015,111
+"Doce de Octubre",3,2016,98
+"Doce de Octubre",3,2017,89
+"Doce de Octubre",3,2018,116
+"Doce de Octubre",4,2014,97
+"Doce de Octubre",4,2015,95
+"Doce de Octubre",4,2016,115
+"Doce de Octubre",4,2017,107
+"Doce de Octubre",4,2018,98
+"Doce de Octubre",5,2014,105
+"Doce de Octubre",5,2015,97
+"Doce de Octubre",5,2016,101
+"Doce de Octubre",5,2017,112
+"Doce de Octubre",5,2018,99
+"Doce de Octubre",6,2014,109
+"Doce de Octubre",6,2015,107
+"Doce de Octubre",6,2016,87
+"Doce de Octubre",6,2017,79
+"Doce de Octubre",6,2018,125
+"Doce de Octubre",7,2014,98
+"Doce de Octubre",7,2015,92
+"Doce de Octubre",7,2016,117
+"Doce de Octubre",7,2017,105
+"Doce de Octubre",7,2018,98
+"Doce de Octubre",8,2014,113
+"Doce de Octubre",8,2015,106
+"Doce de Octubre",8,2016,119
+"Doce de Octubre",8,2017,112
+"Doce de Octubre",8,2018,111
+"Doce de Octubre",9,2014,105
+"Doce de Octubre",9,2015,93
+"Doce de Octubre",9,2016,86
+"Doce de Octubre",9,2017,111
+"Doce de Octubre",9,2018,102
+"Doce de Octubre",10,2014,87
+"Doce de Octubre",10,2015,93
+"Doce de Octubre",10,2016,97
+"Doce de Octubre",10,2017,122
+"Doce de Octubre",10,2018,80
+"Doce de Octubre",11,2014,96
+"Doce de Octubre",11,2015,90
+"Doce de Octubre",11,2016,104
+"Doce de Octubre",11,2017,96
+"Doce de Octubre",11,2018,64
+"Doce de Octubre",12,2014,83
+"Doce de Octubre",12,2015,88
+"Doce de Octubre",12,2016,93
+"Doce de Octubre",12,2017,99
+"Doce de Octubre",12,2018,104
+"El Poblado",1,2014,245
+"El Poblado",1,2015,235
+"El Poblado",1,2016,241
+"El Poblado",1,2017,268
+"El Poblado",1,2018,219
+"El Poblado",2,2014,253
+"El Poblado",2,2015,251
+"El Poblado",2,2016,283
+"El Poblado",2,2017,331
+"El Poblado",2,2018,302
+"El Poblado",3,2014,294
+"El Poblado",3,2015,271
+"El Poblado",3,2016,267
+"El Poblado",3,2017,298
+"El Poblado",3,2018,280
+"El Poblado",4,2014,262
+"El Poblado",4,2015,238
+"El Poblado",4,2016,292
+"El Poblado",4,2017,326
+"El Poblado",4,2018,270
+"El Poblado",5,2014,284
+"El Poblado",5,2015,259
+"El Poblado",5,2016,277
+"El Poblado",5,2017,369
+"El Poblado",5,2018,331
+"El Poblado",6,2014,239
+"El Poblado",6,2015,264
+"El Poblado",6,2016,285
+"El Poblado",6,2017,341
+"El Poblado",6,2018,266
+"El Poblado",7,2014,259
+"El Poblado",7,2015,294
+"El Poblado",7,2016,276
+"El Poblado",7,2017,316
+"El Poblado",7,2018,261
+"El Poblado",8,2014,264
+"El Poblado",8,2015,321
+"El Poblado",8,2016,336
+"El Poblado",8,2017,317
+"El Poblado",8,2018,339
+"El Poblado",9,2014,276
+"El Poblado",9,2015,320
+"El Poblado",9,2016,311
+"El Poblado",9,2017,342
+"El Poblado",9,2018,324
+"El Poblado",10,2014,272
+"El Poblado",10,2015,247
+"El Poblado",10,2016,301
+"El Poblado",10,2017,340
+"El Poblado",10,2018,316
+"El Poblado",11,2014,242
+"El Poblado",11,2015,230
+"El Poblado",11,2016,282
+"El Poblado",11,2017,299
+"El Poblado",11,2018,316
+"El Poblado",12,2014,264
+"El Poblado",12,2015,264
+"El Poblado",12,2016,288
+"El Poblado",12,2017,306
+"El Poblado",12,2018,284
+"Guayabal",1,2014,206
+"Guayabal",1,2015,210
+"Guayabal",1,2016,209
+"Guayabal",1,2017,234
+"Guayabal",1,2018,195
+"Guayabal",2,2014,210
+"Guayabal",2,2015,244
+"Guayabal",2,2016,304
+"Guayabal",2,2017,275
+"Guayabal",2,2018,244
+"Guayabal",3,2014,280
+"Guayabal",3,2015,232
+"Guayabal",3,2016,244
+"Guayabal",3,2017,271
+"Guayabal",3,2018,234
+"Guayabal",4,2014,235
+"Guayabal",4,2015,210
+"Guayabal",4,2016,287
+"Guayabal",4,2017,261
+"Guayabal",4,2018,252
+"Guayabal",5,2014,277
+"Guayabal",5,2015,226
+"Guayabal",5,2016,271
+"Guayabal",5,2017,260
+"Guayabal",5,2018,268
+"Guayabal",6,2014,236
+"Guayabal",6,2015,194
+"Guayabal",6,2016,241
+"Guayabal",6,2017,266
+"Guayabal",6,2018,217
+"Guayabal",7,2014,278
+"Guayabal",7,2015,243
+"Guayabal",7,2016,282
+"Guayabal",7,2017,268
+"Guayabal",7,2018,276
+"Guayabal",8,2014,239
+"Guayabal",8,2015,259
+"Guayabal",8,2016,294
+"Guayabal",8,2017,310
+"Guayabal",8,2018,286
+"Guayabal",9,2014,266
+"Guayabal",9,2015,266
+"Guayabal",9,2016,249
+"Guayabal",9,2017,274
+"Guayabal",9,2018,239
+"Guayabal",10,2014,245
+"Guayabal",10,2015,258
+"Guayabal",10,2016,315
+"Guayabal",10,2017,261
+"Guayabal",10,2018,274
+"Guayabal",11,2014,241
+"Guayabal",11,2015,219
+"Guayabal",11,2016,306
+"Guayabal",11,2017,254
+"Guayabal",11,2018,264
+"Guayabal",12,2014,233
+"Guayabal",12,2015,253
+"Guayabal",12,2016,301
+"Guayabal",12,2017,243
+"Guayabal",12,2018,228
+"La América",1,2014,104
+"La América",1,2015,118
+"La América",1,2016,95
+"La América",1,2017,113
+"La América",1,2018,106
+"La América",2,2014,115
+"La América",2,2015,114
+"La América",2,2016,130
+"La América",2,2017,117
+"La América",2,2018,114
+"La América",3,2014,136
+"La América",3,2015,107
+"La América",3,2016,140
+"La América",3,2017,125
+"La América",3,2018,106
+"La América",4,2014,110
+"La América",4,2015,124
+"La América",4,2016,136
+"La América",4,2017,98
+"La América",4,2018,116
+"La América",5,2014,125
+"La América",5,2015,120
+"La América",5,2016,124
+"La América",5,2017,124
+"La América",5,2018,119
+"La América",6,2014,117
+"La América",6,2015,91
+"La América",6,2016,106
+"La América",6,2017,96
+"La América",6,2018,109
+"La América",7,2014,121
+"La América",7,2015,131
+"La América",7,2016,121
+"La América",7,2017,138
+"La América",7,2018,95
+"La América",8,2014,103
+"La América",8,2015,101
+"La América",8,2016,134
+"La América",8,2017,156
+"La América",8,2018,92
+"La América",9,2014,121
+"La América",9,2015,107
+"La América",9,2016,127
+"La América",9,2017,145
+"La América",9,2018,92
+"La América",10,2014,119
+"La América",10,2015,133
+"La América",10,2016,128
+"La América",10,2017,120
+"La América",10,2018,106
+"La América",11,2014,111
+"La América",11,2015,118
+"La América",11,2016,109
+"La América",11,2017,108
+"La América",11,2018,87
+"La América",12,2014,106
+"La América",12,2015,95
+"La América",12,2016,95
+"La América",12,2017,115
+"La América",12,2018,102
+"La Candelaria",1,2014,625
+"La Candelaria",1,2015,626
+"La Candelaria",1,2016,640
+"La Candelaria",1,2017,634
+"La Candelaria",1,2018,587
+"La Candelaria",2,2014,691
+"La Candelaria",2,2015,663
+"La Candelaria",2,2016,694
+"La Candelaria",2,2017,655
+"La Candelaria",2,2018,673
+"La Candelaria",3,2014,745
+"La Candelaria",3,2015,778
+"La Candelaria",3,2016,724
+"La Candelaria",3,2017,665
+"La Candelaria",3,2018,650
+"La Candelaria",4,2014,717
+"La Candelaria",4,2015,778
+"La Candelaria",4,2016,725
+"La Candelaria",4,2017,633
+"La Candelaria",4,2018,708
+"La Candelaria",5,2014,745
+"La Candelaria",5,2015,824
+"La Candelaria",5,2016,745
+"La Candelaria",5,2017,731
+"La Candelaria",5,2018,668
+"La Candelaria",6,2014,712
+"La Candelaria",6,2015,757
+"La Candelaria",6,2016,731
+"La Candelaria",6,2017,672
+"La Candelaria",6,2018,653
+"La Candelaria",7,2014,796
+"La Candelaria",7,2015,867
+"La Candelaria",7,2016,725
+"La Candelaria",7,2017,749
+"La Candelaria",7,2018,648
+"La Candelaria",8,2014,778
+"La Candelaria",8,2015,757
+"La Candelaria",8,2016,829
+"La Candelaria",8,2017,802
+"La Candelaria",8,2018,755
+"La Candelaria",9,2014,760
+"La Candelaria",9,2015,831
+"La Candelaria",9,2016,787
+"La Candelaria",9,2017,763
+"La Candelaria",9,2018,749
+"La Candelaria",10,2014,727
+"La Candelaria",10,2015,873
+"La Candelaria",10,2016,758
+"La Candelaria",10,2017,740
+"La Candelaria",10,2018,760
+"La Candelaria",11,2014,695
+"La Candelaria",11,2015,756
+"La Candelaria",11,2016,725
+"La Candelaria",11,2017,734
+"La Candelaria",11,2018,729
+"La Candelaria",12,2014,769
+"La Candelaria",12,2015,845
+"La Candelaria",12,2016,749
+"La Candelaria",12,2017,681
+"La Candelaria",12,2018,723
+"Laureles Estadio",1,2014,322
+"Laureles Estadio",1,2015,307
+"Laureles Estadio",1,2016,306
+"Laureles Estadio",1,2017,364
+"Laureles Estadio",1,2018,352
+"Laureles Estadio",2,2014,408
+"Laureles Estadio",2,2015,367
+"Laureles Estadio",2,2016,412
+"Laureles Estadio",2,2017,432
+"Laureles Estadio",2,2018,403
+"Laureles Estadio",3,2014,453
+"Laureles Estadio",3,2015,447
+"Laureles Estadio",3,2016,424
+"Laureles Estadio",3,2017,445
+"Laureles Estadio",3,2018,345
+"Laureles Estadio",4,2014,390
+"Laureles Estadio",4,2015,429
+"Laureles Estadio",4,2016,431
+"Laureles Estadio",4,2017,375
+"Laureles Estadio",4,2018,375
+"Laureles Estadio",5,2014,442
+"Laureles Estadio",5,2015,452
+"Laureles Estadio",5,2016,414
+"Laureles Estadio",5,2017,407
+"Laureles Estadio",5,2018,393
+"Laureles Estadio",6,2014,374
+"Laureles Estadio",6,2015,378
+"Laureles Estadio",6,2016,370
+"Laureles Estadio",6,2017,412
+"Laureles Estadio",6,2018,363
+"Laureles Estadio",7,2014,407
+"Laureles Estadio",7,2015,407
+"Laureles Estadio",7,2016,427
+"Laureles Estadio",7,2017,429
+"Laureles Estadio",7,2018,351
+"Laureles Estadio",8,2014,409
+"Laureles Estadio",8,2015,429
+"Laureles Estadio",8,2016,436
+"Laureles Estadio",8,2017,477
+"Laureles Estadio",8,2018,372
+"Laureles Estadio",9,2014,373
+"Laureles Estadio",9,2015,446
+"Laureles Estadio",9,2016,471
+"Laureles Estadio",9,2017,406
+"Laureles Estadio",9,2018,380
+"Laureles Estadio",10,2014,380
+"Laureles Estadio",10,2015,411
+"Laureles Estadio",10,2016,429
+"Laureles Estadio",10,2017,394
+"Laureles Estadio",10,2018,430
+"Laureles Estadio",11,2014,357
+"Laureles Estadio",11,2015,415
+"Laureles Estadio",11,2016,411
+"Laureles Estadio",11,2017,373
+"Laureles Estadio",11,2018,326
+"Laureles Estadio",12,2014,363
+"Laureles Estadio",12,2015,420
+"Laureles Estadio",12,2016,385
+"Laureles Estadio",12,2017,403
+"Laureles Estadio",12,2018,333
+"Manrique",1,2014,88
+"Manrique",1,2015,90
+"Manrique",1,2016,84
+"Manrique",1,2017,101
+"Manrique",1,2018,70
+"Manrique",2,2014,105
+"Manrique",2,2015,113
+"Manrique",2,2016,99
+"Manrique",2,2017,92
+"Manrique",2,2018,83
+"Manrique",3,2014,142
+"Manrique",3,2015,111
+"Manrique",3,2016,106
+"Manrique",3,2017,102
+"Manrique",3,2018,99
+"Manrique",4,2014,119
+"Manrique",4,2015,108
+"Manrique",4,2016,110
+"Manrique",4,2017,102
+"Manrique",4,2018,69
+"Manrique",5,2014,122
+"Manrique",5,2015,153
+"Manrique",5,2016,121
+"Manrique",5,2017,106
+"Manrique",5,2018,101
+"Manrique",6,2014,133
+"Manrique",6,2015,112
+"Manrique",6,2016,114
+"Manrique",6,2017,84
+"Manrique",6,2018,96
+"Manrique",7,2014,104
+"Manrique",7,2015,115
+"Manrique",7,2016,112
+"Manrique",7,2017,104
+"Manrique",7,2018,112
+"Manrique",8,2014,128
+"Manrique",8,2015,116
+"Manrique",8,2016,100
+"Manrique",8,2017,88
+"Manrique",8,2018,98
+"Manrique",9,2014,121
+"Manrique",9,2015,126
+"Manrique",9,2016,102
+"Manrique",9,2017,98
+"Manrique",9,2018,109
+"Manrique",10,2014,105
+"Manrique",10,2015,127
+"Manrique",10,2016,136
+"Manrique",10,2017,85
+"Manrique",10,2018,101
+"Manrique",11,2014,113
+"Manrique",11,2015,98
+"Manrique",11,2016,118
+"Manrique",11,2017,104
+"Manrique",11,2018,96
+"Manrique",12,2014,126
+"Manrique",12,2015,114
+"Manrique",12,2016,111
+"Manrique",12,2017,101
+"Manrique",12,2018,99
+"Popular",1,2014,41
+"Popular",1,2015,43
+"Popular",1,2016,38
+"Popular",1,2017,42
+"Popular",1,2018,42
+"Popular",2,2014,47
+"Popular",2,2015,43
+"Popular",2,2016,50
+"Popular",2,2017,43
+"Popular",2,2018,39
+"Popular",3,2014,77
+"Popular",3,2015,54
+"Popular",3,2016,62
+"Popular",3,2017,38
+"Popular",3,2018,54
+"Popular",4,2014,68
+"Popular",4,2015,49
+"Popular",4,2016,54
+"Popular",4,2017,39
+"Popular",4,2018,55
+"Popular",5,2014,46
+"Popular",5,2015,56
+"Popular",5,2016,49
+"Popular",5,2017,44
+"Popular",5,2018,41
+"Popular",6,2014,48
+"Popular",6,2015,48
+"Popular",6,2016,42
+"Popular",6,2017,37
+"Popular",6,2018,48
+"Popular",7,2014,54
+"Popular",7,2015,52
+"Popular",7,2016,61
+"Popular",7,2017,45
+"Popular",7,2018,57
+"Popular",8,2014,58
+"Popular",8,2015,59
+"Popular",8,2016,47
+"Popular",8,2017,40
+"Popular",8,2018,54
+"Popular",9,2014,63
+"Popular",9,2015,61
+"Popular",9,2016,59
+"Popular",9,2017,51
+"Popular",9,2018,53
+"Popular",10,2014,44
+"Popular",10,2015,50
+"Popular",10,2016,63
+"Popular",10,2017,65
+"Popular",10,2018,48
+"Popular",11,2014,55
+"Popular",11,2015,49
+"Popular",11,2016,46
+"Popular",11,2017,45
+"Popular",11,2018,48
+"Popular",12,2014,54
+"Popular",12,2015,49
+"Popular",12,2016,43
+"Popular",12,2017,62
+"Popular",12,2018,53
+"Robledo",1,2014,221
+"Robledo",1,2015,208
+"Robledo",1,2016,191
+"Robledo",1,2017,194
+"Robledo",1,2018,213
+"Robledo",2,2014,218
+"Robledo",2,2015,227
+"Robledo",2,2016,232
+"Robledo",2,2017,199
+"Robledo",2,2018,207
+"Robledo",3,2014,236
+"Robledo",3,2015,250
+"Robledo",3,2016,223
+"Robledo",3,2017,252
+"Robledo",3,2018,245
+"Robledo",4,2014,232
+"Robledo",4,2015,249
+"Robledo",4,2016,227
+"Robledo",4,2017,199
+"Robledo",4,2018,239
+"Robledo",5,2014,229
+"Robledo",5,2015,283
+"Robledo",5,2016,248
+"Robledo",5,2017,261
+"Robledo",5,2018,248
+"Robledo",6,2014,242
+"Robledo",6,2015,247
+"Robledo",6,2016,211
+"Robledo",6,2017,202
+"Robledo",6,2018,224
+"Robledo",7,2014,245
+"Robledo",7,2015,261
+"Robledo",7,2016,198
+"Robledo",7,2017,230
+"Robledo",7,2018,244
+"Robledo",8,2014,243
+"Robledo",8,2015,255
+"Robledo",8,2016,264
+"Robledo",8,2017,248
+"Robledo",8,2018,213
+"Robledo",9,2014,244
+"Robledo",9,2015,238
+"Robledo",9,2016,269
+"Robledo",9,2017,257
+"Robledo",9,2018,210
+"Robledo",10,2014,242
+"Robledo",10,2015,245
+"Robledo",10,2016,269
+"Robledo",10,2017,236
+"Robledo",10,2018,239
+"Robledo",11,2014,220
+"Robledo",11,2015,213
+"Robledo",11,2016,216
+"Robledo",11,2017,216
+"Robledo",11,2018,223
+"Robledo",12,2014,256
+"Robledo",12,2015,208
+"Robledo",12,2016,198
+"Robledo",12,2017,225
+"Robledo",12,2018,226
+"San Javier",1,2014,56
+"San Javier",1,2015,59
+"San Javier",1,2016,52
+"San Javier",1,2017,62
+"San Javier",1,2018,35
+"San Javier",2,2014,73
+"San Javier",2,2015,63
+"San Javier",2,2016,73
+"San Javier",2,2017,62
+"San Javier",2,2018,52
+"San Javier",3,2014,59
+"San Javier",3,2015,68
+"San Javier",3,2016,64
+"San Javier",3,2017,66
+"San Javier",3,2018,70
+"San Javier",4,2014,79
+"San Javier",4,2015,52
+"San Javier",4,2016,76
+"San Javier",4,2017,66
+"San Javier",4,2018,58
+"San Javier",5,2014,70
+"San Javier",5,2015,60
+"San Javier",5,2016,71
+"San Javier",5,2017,66
+"San Javier",5,2018,55
+"San Javier",6,2014,68
+"San Javier",6,2015,73
+"San Javier",6,2016,55
+"San Javier",6,2017,45
+"San Javier",6,2018,42
+"San Javier",7,2014,78
+"San Javier",7,2015,58
+"San Javier",7,2016,76
+"San Javier",7,2017,73
+"San Javier",7,2018,58
+"San Javier",8,2014,65
+"San Javier",8,2015,59
+"San Javier",8,2016,62
+"San Javier",8,2017,63
+"San Javier",8,2018,55
+"San Javier",9,2014,60
+"San Javier",9,2015,71
+"San Javier",9,2016,78
+"San Javier",9,2017,69
+"San Javier",9,2018,50
+"San Javier",10,2014,59
+"San Javier",10,2015,69
+"San Javier",10,2016,84
+"San Javier",10,2017,81
+"San Javier",10,2018,59
+"San Javier",11,2014,73
+"San Javier",11,2015,73
+"San Javier",11,2016,61
+"San Javier",11,2017,55
+"San Javier",11,2018,40
+"San Javier",12,2014,67
+"San Javier",12,2015,59
+"San Javier",12,2016,67
+"San Javier",12,2017,63
+"San Javier",12,2018,62
+"Santa Cruz",1,2014,48
+"Santa Cruz",1,2015,44
+"Santa Cruz",1,2016,39
+"Santa Cruz",1,2017,31
+"Santa Cruz",1,2018,31
+"Santa Cruz",2,2014,48
+"Santa Cruz",2,2015,45
+"Santa Cruz",2,2016,42
+"Santa Cruz",2,2017,43
+"Santa Cruz",2,2018,45
+"Santa Cruz",3,2014,54
+"Santa Cruz",3,2015,50
+"Santa Cruz",3,2016,38
+"Santa Cruz",3,2017,42
+"Santa Cruz",3,2018,45
+"Santa Cruz",4,2014,45
+"Santa Cruz",4,2015,37
+"Santa Cruz",4,2016,53
+"Santa Cruz",4,2017,48
+"Santa Cruz",4,2018,62
+"Santa Cruz",5,2014,52
+"Santa Cruz",5,2015,51
+"Santa Cruz",5,2016,40
+"Santa Cruz",5,2017,33
+"Santa Cruz",5,2018,44
+"Santa Cruz",6,2014,59
+"Santa Cruz",6,2015,39
+"Santa Cruz",6,2016,45
+"Santa Cruz",6,2017,38
+"Santa Cruz",6,2018,52
+"Santa Cruz",7,2014,55
+"Santa Cruz",7,2015,50
+"Santa Cruz",7,2016,43
+"Santa Cruz",7,2017,46
+"Santa Cruz",7,2018,50
+"Santa Cruz",8,2014,58
+"Santa Cruz",8,2015,58
+"Santa Cruz",8,2016,43
+"Santa Cruz",8,2017,43
+"Santa Cruz",8,2018,40
+"Santa Cruz",9,2014,39
+"Santa Cruz",9,2015,43
+"Santa Cruz",9,2016,52
+"Santa Cruz",9,2017,44
+"Santa Cruz",9,2018,50
+"Santa Cruz",10,2014,52
+"Santa Cruz",10,2015,42
+"Santa Cruz",10,2016,46
+"Santa Cruz",10,2017,45
+"Santa Cruz",10,2018,52
+"Santa Cruz",11,2014,63
+"Santa Cruz",11,2015,45
+"Santa Cruz",11,2016,48
+"Santa Cruz",11,2017,53
+"Santa Cruz",11,2018,54
+"Santa Cruz",12,2014,59
+"Santa Cruz",12,2015,54
+"Santa Cruz",12,2016,67
+"Santa Cruz",12,2017,40
+"Santa Cruz",12,2018,44
+"Villa Hermosa",1,2014,82
+"Villa Hermosa",1,2015,73
+"Villa Hermosa",1,2016,83
+"Villa Hermosa",1,2017,86
+"Villa Hermosa",1,2018,66
+"Villa Hermosa",2,2014,99
+"Villa Hermosa",2,2015,93
+"Villa Hermosa",2,2016,89
+"Villa Hermosa",2,2017,84
+"Villa Hermosa",2,2018,91
+"Villa Hermosa",3,2014,107
+"Villa Hermosa",3,2015,101
+"Villa Hermosa",3,2016,107
+"Villa Hermosa",3,2017,78
+"Villa Hermosa",3,2018,87
+"Villa Hermosa",4,2014,97
+"Villa Hermosa",4,2015,107
+"Villa Hermosa",4,2016,97
+"Villa Hermosa",4,2017,84
+"Villa Hermosa",4,2018,79
+"Villa Hermosa",5,2014,100
+"Villa Hermosa",5,2015,88
+"Villa Hermosa",5,2016,81
+"Villa Hermosa",5,2017,105
+"Villa Hermosa",5,2018,106
+"Villa Hermosa",6,2014,91
+"Villa Hermosa",6,2015,85
+"Villa Hermosa",6,2016,79
+"Villa Hermosa",6,2017,78
+"Villa Hermosa",6,2018,80
+"Villa Hermosa",7,2014,96
+"Villa Hermosa",7,2015,94
+"Villa Hermosa",7,2016,109
+"Villa Hermosa",7,2017,75
+"Villa Hermosa",7,2018,110
+"Villa Hermosa",8,2014,105
+"Villa Hermosa",8,2015,95
+"Villa Hermosa",8,2016,103
+"Villa Hermosa",8,2017,108
+"Villa Hermosa",8,2018,106
+"Villa Hermosa",9,2014,104
+"Villa Hermosa",9,2015,108
+"Villa Hermosa",9,2016,91
+"Villa Hermosa",9,2017,79
+"Villa Hermosa",9,2018,73
+"Villa Hermosa",10,2014,99
+"Villa Hermosa",10,2015,108
+"Villa Hermosa",10,2016,88
+"Villa Hermosa",10,2017,79
+"Villa Hermosa",10,2018,77
+"Villa Hermosa",11,2014,101
+"Villa Hermosa",11,2015,90
+"Villa Hermosa",11,2016,87
+"Villa Hermosa",11,2017,81
+"Villa Hermosa",11,2018,80
+"Villa Hermosa",12,2014,85
+"Villa Hermosa",12,2015,101
+"Villa Hermosa",12,2016,106
+"Villa Hermosa",12,2017,98
+"Villa Hermosa",12,2018,70

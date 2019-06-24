@@ -29,7 +29,7 @@ date_filler_bar <- function(barrio, inicio, fin){
   dates <- dates%>% mutate(
     BARRIO = barrio,
     PERIODO = as.numeric(format(FECHA ,"%Y")),
-    MES = as.numeric(as.factor(format(FECHA ,"%m"))),
+    MES = as.factor(as.numeric(format(FECHA ,"%m"))),
     DIA = as.numeric(format(FECHA ,"%d")),
     DIA_NUM = as.factor(ifelse(as.POSIXlt(FECHA)$wday==0, 7, as.POSIXlt(FECHA)$wday)),
     especial = ifelse(FECHA %in% dias.especiales$FECHA, 1, 0)
@@ -101,8 +101,12 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
     tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
     
   }else{
-    #TODO modelos de barrios y sus predicciones
+    #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
+    modelo1 <- filter(bar.dia.1, Barrio== nombre)$Reg.obj[[1]]
+    modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
+    tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
+    tr2 <- filter(df.comuna, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
   }
   y1 <- predict(modelo1, newdata = datos, data= tr1)
   y2 <- predict(modelo2, newdata = datos, data= tr2)
@@ -112,16 +116,12 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
   
 }
 
-prediccion <- predicciones_dias(T, '2019-06-23', '2019-08-24', "La Candelaria")
+##EJEMPLO:
+#prediccion <- predicciones_dias(T, '2019-06-23', '2019-08-24', "La Candelaria")
 
 ```
 
 
-```{r}
-pruebas <- date_filler_com("Aranjuez", '2019-06-23', '2019-12-31')
-#TR_data <- filter(df.comuna, PERIODO!=2018)
-tr <- filter(df.comuna, COMUNA=="Aranjuez", PERIODO !=2018)
-y <- predict(modelo, newdata = pruebas, data= tr)
-```
+
 
 
