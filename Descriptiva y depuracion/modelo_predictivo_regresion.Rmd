@@ -104,13 +104,37 @@ write.csv(barrios_mes, file = "barrios_sem.csv", row.names=F)
 write.csv(comuna_sem, file = "comunas_sem.csv", row.names=F)
 ```
 
+```{r}
+date_filler <- function(df, barrio){
+  
+  dates <- data.frame(FECHA=seq(as.Date('2014-01-01'),as.Date('2018-01-31'),by = "week"))
+  dates <- dates %>% mutate(
+    MES = as.numeric(format(FECHA ,"%m")),
+    SEMANA = as.factor(as.numeric(format(FECHA ,"%U"))),
+    PERIODO = as.numeric(format(FECHA ,"%Y"))
+    )
+  dates<- dates[,-1]
+  
+  data <- full_join(df,dates)
+  data$BARRIO <- barrio
+  #data <- data%>% mutate(
+   # BARRIO = barrio,
+    
+  #)
+  data[is.na(data)] <- 0
+  return(data)  
+}
+#test <- filter(barrios_sem, PERIODO!=2018, BARRIO == "La Candelaria")
+#test2 <- date_filler(test, "La Candelaria")
+```
+
 ## Aplicación del modelo:
 
 ## Modelo Barrios
 
 ## Función de modelo
 ```{r}
-adj_model_com <- function(formulas, tr_data, val_data){
+adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
   
     ## determina si el modelo es para Comunas o Barrios
   if("COMUNA" %in% colnames(tr_data)){
@@ -121,8 +145,20 @@ adj_model_com <- function(formulas, tr_data, val_data){
   
   results <- data.frame(matrix(ncol=7, nrow=0))
   
-
+  tr_data2 <- tr_data
+  val_data2<-val_data
+  
+  
   for(co in com){
+    if(zero_ex_cond){
+      temp <- rbind(tr_data2, val_data2)
+      temp <- date_filler(filter(temp, BARRIO==co), co)
+      tr_data <- filter(temp, PERIODO!=2018)
+      val_data <- filter(temp, PERIODO==2018)
+    }
+
+    
+    
     print(co)
     if("COMUNA" %in% colnames(tr_data)){
       
@@ -139,7 +175,7 @@ adj_model_com <- function(formulas, tr_data, val_data){
     results2 <- data.frame(matrix(ncol=7, nrow=0)) #matriz de resultados para cada formula
     
     if(co %in% c("Batallón Girardot")){
-      formulas <- formulas[1:5]
+      #formulas <- formulas[1:5]
     }
     for(formula in formulas){
       mse_tr.v  <- c()
@@ -147,10 +183,10 @@ adj_model_com <- function(formulas, tr_data, val_data){
       
       
       model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
-      model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
-      model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
+      #model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
+      #model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
       
-      list_models = list(model1,model2, model3)
+      list_models = list(model1)
       
       
        
@@ -159,13 +195,13 @@ adj_model_com <- function(formulas, tr_data, val_data){
     
       
       
-      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model2, newdata=temp_tr,data=temp_tr))^2))
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model2,newdata= temp_va,data=temp_tr))^2))
+      #mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model2, newdata=temp_tr,data=temp_tr))^2))
+      #mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model2,newdata= temp_va,data=temp_tr))^2))
       
       
       
-      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model3, newdata=temp_tr,data=temp_tr))^2))
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model3,newdata= temp_va,data=temp_tr))^2))
+      #mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model3, newdata=temp_tr,data=temp_tr))^2))
+      #mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model3,newdata= temp_va,data=temp_tr))^2))
       
       
       temp <- data.frame(mse_tr = mse_tr.v , mse_va = mse_val.v)
@@ -295,15 +331,13 @@ save(com.mes.1,com.mes.2, file="./Modelos_finales/com.mes.1_2.RData")
 ###mes
 
 ```{r}
-TR_data <- filter(barrios_mes, PERIODO!=2018)[,1:4]
-VA_data <- filter(barrios_mes, PERIODO==2018)[,1:4]
+TR_data <- filter(barrios_mes, PERIODO!=2018)
+VA_data <- filter(barrios_mes, PERIODO==2018)
 
 
 formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO"),
             formula("total~MES"),
             formula("total~MES+PERIODO")
-            ,formula("total~MES+I(MES^2)+PERIODO")
-            ,formula("total~MES+I(MES^2)")
 )
 
 bar.mes.1 <- adj_model_com(formulas, TR_data, VA_data)
@@ -313,8 +347,8 @@ bar.mes.1.vis <- bar.mes.1[,-6]
 ```
 
 ```{r}
-TR_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
-VA_data <- filter(barrios_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
+TR_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017 & BARRIO!="San José la Cima No.2")
+VA_data <- filter(barrios_mes, (PERIODO==2018 | PERIODO==2017)&BARRIO!="San José la Cima No.2")
 bar.mes.2 <- adj_model_com(formulas, TR_data, VA_data)
 bar.mes.2.vis <- bar.mes.2[,-6]
 ```
@@ -322,26 +356,37 @@ bar.mes.2.vis <- bar.mes.2[,-6]
 
 ```{r}
 #MSE_mes_bar
-save(bar_mes_mod1, file="./Modelos/barrio_mes_mod1.RData")
+save(bar.mes.1, bar.mes.2, file="./Modelos_finales/bar.mes.1_2.RData")
 ```
 
 ### sem
 
 El modelo sin periodo nota ser considerablemente mejor al que lo invlolucra para los que invlolucran  
 ```{r}
-tr_data <- filter(barrios_sem, PERIODO!=2018)[,1:4]
-va_data <- filter(barrios_sem, PERIODO==2018)[,1:4]
+TR_data <- filter(barrios_sem, PERIODO!=2018)
+VA_data  <- filter(barrios_sem, PERIODO==2018)
 
-#tr_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)[,1:4]
-#va_data <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)[,1:4]
-formula = formula("total~SEMANA")
 
-bar_sem_mod2 <- adj_model_com(formula, tr_data, va_data)
-#MSE_sem_bar <- c(mean(bar_sem$MSE_Poisson_tr), mean(bar_sem$MSE_Poisson_va), mean(bar_sem$MSE_tr), mean(bar_sem$MSE_va))
+formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO+SEMANA"),
+            formula("total~MES+ SEMANA")
+)
+
+bar.sem.1 <- adj_model_com(formulas, TR_data, VA_data,T)
+bar.sem.1.vis <- bar.sem.1[,-6]
+
+
 ```
+
+```{r}
+TR_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)
+VA_data  <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)
+bar.sem.2 <- adj_model_com(formulas, TR_data, VA_data,T)
+bar.sem.2.vis <- bar.sem.2[,-6]
+```
+
 ```{r}
 #MSE_sem_bar
-save(bar_sem_mod2, file="./Modelos/barrio_sem_mod2.RData")
+save(bar.sem.1, bar.sem.2, file="./Modelos_finales/bar.sem.1_2.RData")
 ```
 
 

@@ -67,7 +67,7 @@ df.comuna <- read.csv("comunas_mes.csv", stringsAsFactors = FALSE, encoding = "I
 
 
 load("./Modelos_finales/com.mes.1_2.RData") ## carga los modelos de comunas
-#TODO cargar modelos de barrios
+load("./Modelos_finales/bar.mes.1_2.RData")
 ```
 
 
@@ -89,10 +89,12 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
   }else{
     #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
+    
     modelo1 <- filter(bar.mes.1, Barrio== nombre)$Reg.obj[[1]]
     modelo2 <- filter(bar.mes.2, Barrio== nombre)$Reg.obj[[1]]
+    
     tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    tr2 <- filter(df.comuna, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
+    tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
   }
   y1 <- predict(modelo1, newdata = datos, data= tr1)
   y2 <- predict(modelo2, newdata = datos, data= tr2)
@@ -103,7 +105,7 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
 }
 
 ##EJEMPLO:
-##para comuna
-prediccion <- predicciones_meses(T, c(2019, 5), c(2019,10), "La Candelaria")
+##para barrio
+prediccion <- predicciones_meses(F, c(2019, 5), c(2019,10), "Aldea Pablo VI")
 
 ```
