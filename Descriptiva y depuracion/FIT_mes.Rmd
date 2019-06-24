@@ -61,7 +61,7 @@ date_filler_com <- function(comuna, inicio, fin){
 
 ##CARGA BASES DE DATOS DEL ENTRENAMIENTO Y LOS MODELOS
 ```{r}
-df.barrio <- read.csv("barrios_mes.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+#df.barrio <- read.csv("barrios_mes.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
 
 df.comuna <- read.csv("comunas_mes.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
 
@@ -86,6 +86,9 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
     tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
     tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
     
+    y1 <- predict(modelo1, newdata = datos, data= tr1)
+    y2 <- predict(modelo2, newdata = datos, data= tr2)
+    
   }else{
     #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
@@ -93,11 +96,13 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
     modelo1 <- filter(bar.mes.1, Barrio== nombre)$Reg.obj[[1]]
     modelo2 <- filter(bar.mes.2, Barrio== nombre)$Reg.obj[[1]]
     
-    tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
+    #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
+    #tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
+    
+    y1 <- predict(modelo1, newdata = datos)
+    y2 <- predict(modelo2, newdata = datos)
   }
-  y1 <- predict(modelo1, newdata = datos, data= tr1)
-  y2 <- predict(modelo2, newdata = datos, data= tr2)
+  
   
   return(c(sum(y1), sum(y2)))
   

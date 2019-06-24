@@ -118,6 +118,8 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
     
     y1 <- predict(modelo1, newdata = datos)
     y2 <- predict(modelo2, newdata = datos)
+    y1[y1<0] <- 0
+    y2[y2<0] <- 0
   }
   #return(tr2)
   

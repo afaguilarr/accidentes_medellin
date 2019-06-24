@@ -140,8 +140,8 @@ adj_model_com <- function(formulas, tr_data, val_data, zero_ex_cond = F){
     if(zero_ex_cond){
       temp <- rbind(tr_data2, val_data2)
       temp <- date_filler(filter(temp, BARRIO==co), co)
-      tr_data <- filter(temp, PERIODO!=2018)
-      val_data <- filter(temp, PERIODO==2018)
+      tr_data <- filter(temp, PERIODO!=2018 & PERIODO!=2017)
+      val_data <- filter(temp, PERIODO==2018 | PERIODO!=2017)
     }
     
     
@@ -324,7 +324,7 @@ TR_data <- filter(df.barrio, PERIODO!=2018 & PERIODO!=2017)
 VA_data <- filter(df.barrio, PERIODO==2018 | PERIODO==2017)
 
 bar.dia.2 <- adj_model_com(formulas, TR_data, VA_data, T)
-bar.dia.2.vis <- bar.dia.2[,-6]
+bar.dia.2.vis <- bar.dia.2[,-5]
 ```
 
 ```{r}

@@ -153,8 +153,8 @@ adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
     if(zero_ex_cond){
       temp <- rbind(tr_data2, val_data2)
       temp <- date_filler(filter(temp, BARRIO==co), co)
-      tr_data <- filter(temp, PERIODO!=2018)
-      val_data <- filter(temp, PERIODO==2018)
+      tr_data <- filter(temp, PERIODO!=2018& PERIODO!=2017)
+      val_data <- filter(temp, PERIODO==2018 | PERIODO!=2017)
     }
 
     
@@ -182,7 +182,7 @@ adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
       mse_val.v <- c()
       
       
-      model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
+      model1 <- glm(formula = formula, data = temp_tr)
       #model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
       #model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
       
@@ -190,8 +190,8 @@ adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
       
       
        
-       mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr,data=temp_tr))^2))
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata= temp_va,data=temp_tr))^2))
+       mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata= temp_va))^2))
     
       
       
@@ -209,8 +209,8 @@ adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
       
       best_model <- filter(temp, mse_va == min(temp$mse_va))
       best_model$com_bar <- co
-      best_model$family <- best_model$model[[1]]$family[1]
-      best_model$form <- format(formula(best_model$model[[1]], what = c("mu")))
+      #best_model$family <- best_model$model[[1]]$family[1]
+      best_model$form <- format(formula(best_model$model[[1]]))
       results2 <- rbind(results2, best_model)
     }
     results <- rbind(results,  filter(results2, mse_va == min(results2$mse_va)))
@@ -222,8 +222,8 @@ adj_model_com <- function(formulas, tr_data, val_data,zero_ex_cond=F){
   results[, 1:2] <- sapply(results[, 1:2], trans)
   #COnvierte los errores a variables numericas
   
-  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Family", "Formula")
-  results <- results[,c(4,1,2,5,6,3)]
+  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Formula")
+  results <- results[,c(4,1,2,5,3)]
   return(results)
   
 
@@ -341,7 +341,7 @@ formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO"),
 )
 
 bar.mes.1 <- adj_model_com(formulas, TR_data, VA_data)
-bar.mes.1.vis <- bar.mes.1[,-6]
+bar.mes.1.vis <- bar.mes.1[,-5]
 
 
 ```
@@ -350,7 +350,7 @@ bar.mes.1.vis <- bar.mes.1[,-6]
 TR_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017 & BARRIO!="San José la Cima No.2")
 VA_data <- filter(barrios_mes, (PERIODO==2018 | PERIODO==2017)&BARRIO!="San José la Cima No.2")
 bar.mes.2 <- adj_model_com(formulas, TR_data, VA_data)
-bar.mes.2.vis <- bar.mes.2[,-6]
+bar.mes.2.vis <- bar.mes.2[,-5]
 ```
 
 
@@ -368,11 +368,13 @@ VA_data  <- filter(barrios_sem, PERIODO==2018)
 
 
 formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO+SEMANA"),
-            formula("total~MES+ SEMANA")
+            formula("total~MES+ SEMANA"),
+            formula("total~MES"),
+            formula("total~MES+PERIODO+SEMANA")
 )
 
 bar.sem.1 <- adj_model_com(formulas, TR_data, VA_data,T)
-bar.sem.1.vis <- bar.sem.1[,-6]
+bar.sem.1.vis <- bar.sem.1[,-5]
 
 
 ```
@@ -381,7 +383,7 @@ bar.sem.1.vis <- bar.sem.1[,-6]
 TR_data <- filter(barrios_sem, PERIODO!=2018 & PERIODO!=2017)
 VA_data  <- filter(barrios_sem, PERIODO==2018 | PERIODO==2017)
 bar.sem.2 <- adj_model_com(formulas, TR_data, VA_data,T)
-bar.sem.2.vis <- bar.sem.2[,-6]
+bar.sem.2.vis <- bar.sem.2[,-5]
 ```
 
 ```{r}
