@@ -63,16 +63,16 @@ dias.especiales <- dias.especiales%>%
 date_filler <- function(df, barrio){
   df$FECHA<-as.Date(df$FECHA)
   df <- df[,-6]
-  dates <- data.frame(FECHA=seq(as.Date('2014-01-01'),as.Date('2018-01-31'),by = 1))
+  dates <- data.frame(FECHA=seq(as.Date('2014-01-01'),as.Date('2017-01-31'),by = 1))
   data <- full_join(df,dates)
   
   data <- data%>% mutate(
     BARRIO = barrio,
     PERIODO = as.numeric(format(FECHA ,"%Y")),
-    MES = as.factor(format(FECHA ,"%m")),
+    MES = as.factor(as.numeric(format(FECHA ,"%m"))),
     DIA = as.numeric(format(FECHA ,"%d")),
     DIA_NUM = as.factor(ifelse(as.POSIXlt(FECHA)$wday==0, 7, as.POSIXlt(FECHA)$wday)),
-    especial = ifelse(FECHA %in% dias.especiales$FECHA, 1, 0)
+    especial = as.factor(ifelse(FECHA %in% dias.especiales$FECHA, 1, 0))
   )
   data[is.na(data)] <- 0
   return(data)  
@@ -166,7 +166,7 @@ adj_model_com <- function(formulas, tr_data, val_data, zero_ex_cond = F){
       mse_val.v <- c()
       
       #model2 <- glm(formula = formula, data = temp_tr)
-      model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
+      model1 <- glm(formula = formula, data = temp_tr)
       #model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
       #model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity")) SE COMENTA PARA BARRIOS
       
@@ -177,9 +177,9 @@ adj_model_com <- function(formulas, tr_data, val_data, zero_ex_cond = F){
       
       
        
-       mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr,data=temp_tr))^2))
+       mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr))^2))
        
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata= temp_va,data=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata=temp_tr))^2))
 
       
       
@@ -199,9 +199,9 @@ adj_model_com <- function(formulas, tr_data, val_data, zero_ex_cond = F){
       
       best_model$com_bar <- co
       
-      best_model$family <- best_model$model[[1]]$family[1]
+      #best_model$family <- best_model$model[[1]]$family[1]
       
-      best_model$form <- format(formula(best_model$model[[1]], what = c("mu")))
+      best_model$form <- format(formula(best_model$model[[1]]))
       
       results2 <- rbind(results2, best_model)
     }
@@ -214,8 +214,8 @@ adj_model_com <- function(formulas, tr_data, val_data, zero_ex_cond = F){
   results[, 1:2] <- sapply(results[, 1:2], trans)
   #COnvierte los errores a variables numericas
   
-  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Family", "Formula")
-  results <- results[,c(4,1,2,5,6,3)]
+  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Formula")
+  results <- results[,c(4,1,2,5,3)]
   return(results)
   
 
@@ -269,18 +269,32 @@ save(com.dia.1, com.dia.2, file = "com.dia.1_2.RData")
 
 ##MODELO PARA BARRIOS_DIAS TR=2014-2017
 ```{r}
+test <- df.barrio%>%group_by(BARRIO)%>%
+  summarise(
+    Total = sum(total),
+    Prom = sum(total)/1498
+  )
+
 barrios <-test$BARRIO
 TR_data <- filter(df.barrio, PERIODO!=2018, BARRIO %in% barrios)
 VA_data <- filter(df.barrio, PERIODO==2018, BARRIO %in% barrios)
 
 formulas = c(formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO+especial"),
             formula("total~DIA_NUM+DIA+MES+especial"),
-            formula("total~DIA_NUM+MES+especial"),
-            formula("total~DIA_NUM+MES+PERIODO")
+            formula("total~DIA_NUM+MES+especial")
 )
 bar.dia.1 <- adj_model_com(formulas, TR_data, VA_data, T)
-bar.dia.1.vis <- bar.dia.1[,-6]
+bar.dia.1.vis <- bar.dia.1[,-5]
 ```
+
+```{r}
+entrenamiento.real <- adj_model_com(formulas, TR_data, VA_data, T)
+entrenamiento.dup <- date_filler(temp_tr, "Aldea Pablo VI")
+s <- bar.dia.1[1,6][[1]]
+temp_tr <- filter(df.barrio, PERIODO!=2018, BARRIO =="Aldea Pablo VI")
+predict(s, newdata = temp_tr[,-6], data = entrenamiento.dup)
+```
+
 
 ```{r}
 test <- df.barrio%>%group_by(BARRIO)%>%
