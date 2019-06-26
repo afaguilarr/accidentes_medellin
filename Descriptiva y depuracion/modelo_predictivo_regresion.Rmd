@@ -205,6 +205,11 @@ for(co in com){
     
   print(p)
 }
+ggplot(data = comuna_mes, mapping = aes(x = MES, y = total, color = factor(PERIODO))) +
+     geom_line() +
+     facet_wrap(~ COMUNA) +
+     theme_bw() +
+     theme(panel.grid = element_blank())
 
   
 ```
