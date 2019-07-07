@@ -26,12 +26,13 @@ date_filler_bar <- function(barrio, inicio, fin){
     BARRIO = barrio,
     PERIODO = as.numeric(format(FECHA ,"%Y")),
     MES = as.numeric(as.factor(format(FECHA ,"%m"))),
-    SEMANA = as.factor(as.numeric(format(FECHA ,"%U")))
+    SEMANA = as.factor(as.numeric(format(FECHA ,"%U"))),
+    Fecha = FECHA
     
   )
   return(dates[,-1]) 
 }
-
+s <- date_filler_bar("La candelaria", c(2019, 1), c(2019,52))
 
 ```
 
@@ -48,7 +49,8 @@ date_filler_com <- function(comuna, inicio, fin){
     COMUNA = comuna,
     PERIODO = as.numeric(format(FECHA ,"%Y")),
     MES = as.numeric(as.factor(format(FECHA ,"%m"))),
-    SEMANA = as.factor(as.numeric(format(FECHA ,"%U")))
+    SEMANA = as.factor(as.numeric(format(FECHA ,"%U"))),
+    Fecha = FECHA
     
   )
   return(dates[,-1])
@@ -83,32 +85,46 @@ predicciones_semana <- function(com.or.bar, inicio, final, nombre){
     datos <- date_filler_com(nombre, inicio, final) #datos a predecir
     
     modelo1 <- filter(com.sem.1, Comuna== nombre)$Reg.obj[[1]]
-    modelo2 <- filter(com.sem.2, Comuna== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(com.sem.2, Comuna== nombre)$Reg.obj[[1]]
     
     tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
+    #tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
     #return(tr1)
-    y1 <- predict(modelo1, newdata = datos, data= tr1)
-    y2 <- predict(modelo2, newdata = datos, data= tr2)
+    y1 <- predict(modelo1, newdata = datos[,-5], data= tr1)
+    #y2 <- predict(modelo2, newdata = datos, data= tr2)
   }else{
     #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
     modelo1 <- filter(bar.sem.1, Barrio== nombre)$Reg.obj[[1]]
-    modelo2 <- filter(bar.sem.2, Barrio== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(bar.sem.2, Barrio== nombre)$Reg.obj[[1]]
     #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
     #tr2 <- filter(df.comuna, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
     
-    y1 <- predict(modelo1, newdata = datos)
-    y2 <- predict(modelo2, newdata = datos)
+    y1 <- predict(modelo1, newdata = datos[,-5])
+    #y2 <- predict(modelo2, newdata = datos)
   }
   
   
-  return(c(sum(y1), sum(y2)))
+  total <- sum(y1)
+  df <- cbind(datos, y1)
   
+  p<-ggplot(data = df, aes(y= y1, x = as.Date(Fecha), col=as.factor(PERIODO)))+ geom_point()+
+     geom_line()+
+  theme(legend.position="top")+
+  theme_bw()+
+    scale_x_date(date_labels = "%U")+
+  labs(title=paste("Accidentalidad en", nombre),
+        x ="Semana", y = "Número de accidentes", col="Periodo")
+  
+  output <- list(df, round(total), p)
+  names(output) <- c("Datos", "total accidentes", "grafico")
+  return(output)
   
 }
 
 ##EJEMPLO:
-#prediccion <- predicciones_semana(T, c(2019, 20), c(2019,50), "La Candelaria")
-prediccion <- predicciones_semana(F, c(2019, 20), c(2019,50), "Aures No.1")
+#prediccion <- predicciones_semana(T, c(2018, 50), c(2019,52), "La Candelaria")
+
+prediccion <- predicciones_semana(F, c(2019, 1), c(2020,52), "Aures No.1")
+print(prediccion$grafico)
 ```

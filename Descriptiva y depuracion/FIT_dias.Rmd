@@ -102,29 +102,29 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
   if(com.or.bar){
     datos <- date_filler_com(nombre, inicio, final) #datos a predecir
     modelo1 <- filter(com.dia.1, Comuna== nombre)$Reg.obj[[1]]
-    modelo2 <- filter(com.dia.2, Comuna== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(com.dia.2, Comuna== nombre)$Reg.obj[[1]]
     tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
+    #tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
   
     y1 <- predict(modelo1, newdata = datos, data= tr1)
-    y2 <- predict(modelo2, newdata = datos, data= tr2)    
+    #y2 <- predict(modelo2, newdata = datos, data= tr2)    
   }else{
     #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
     modelo1 <- filter(bar.dia.1, Barrio== nombre)$Reg.obj[[1]]
-    modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
     #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
     #tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
     
     y1 <- predict(modelo1, newdata = datos)
-    y2 <- predict(modelo2, newdata = datos)
+    #y2 <- predict(modelo2, newdata = datos)
     y1[y1<0] <- 0
-    y2[y2<0] <- 0
+    #y2[y2<0] <- 0
   }
   #return(tr2)
   
-  
-  return(c(sum(y1), sum(y2)))
+  df <- cbind(datos[1], y1)
+  return(df)
   
   
 }
