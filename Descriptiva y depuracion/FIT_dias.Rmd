@@ -37,7 +37,7 @@ date_filler_bar <- function(barrio, inicio, fin){
   )
   return(dates) 
 }
-s <- date_filler_bar("La Candelaria", '2019-06-23', '2019-08-24')
+#s <- date_filler_bar("La Candelaria", '2019-12-01', '2020-02-24')
 
 ```
 
@@ -123,14 +123,28 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
   }
   #return(tr2)
   
+  total <- sum(y1)
   df <- cbind(datos[1], y1)
-  return(df)
+  
+  p<-ggplot(data = df, aes(y= y1, x = as.Date(FECHA)))+
+     geom_line(color = "#00AFBB", size= 1)+
+  theme(legend.position="top")+
+  theme_bw()+
+  labs(title=paste("Accidentalidad en", nombre),
+        x ="Fecha", y = "Número de accidentes")
+  
+  output <- list(df, round(total), p)
+  names(output) <- c("Datos", "total accidentes", "grafico")
+  return(output)
   
   
 }
-
+library(ggplot2)
 ##EJEMPLO:
-#prediccion <- predicciones_dias(T, '2019-06-23', '2019-08-24', "La Candelaria")
-prediccion <- predicciones_dias(F, '2019-06-23', '2019-08-24', "Aldea Pablo VI")
-#y2 <- predict(bar.dia.2[1, 6][[1]], newdata = prediccion[], data= prediccion)
+prediccion <- predicciones_dias(T, '2019-12-01', '2020-01-06', "La Candelaria")
+print(prediccion$grafico)
+#prediccion <- predicciones_dias(F, '2019-06-23', '2019-08-24', "Aldea Pablo VI")
+
+
+
 ```
