@@ -28,7 +28,12 @@ barrios_med <- barrios_med[barrios_med@data$SUBTIPO_BA == "1",]
 
 df_coloring <- df_coloring[order(barrios_med@data$NOMBRE),]
 colnames(df_coloring)[1] <- "NOMBRE"
+
+o_db <- barrios_med
+nombres_filas <- rownames(o_db@data)
+
 barrios_med@data <- merge(barrios_med@data, df_coloring[, -2:-8], by = 'NOMBRE')
+barrios_med@data <- barrios_med@data[order(barrios_med@data$OBJECTID),] 
 
 for(i in 1:max(barrios_med@data$C3G))
 {
@@ -63,10 +68,10 @@ for(i in 1:max(barrios_med@data$C7G))
 
 m<-leaflet(barrios_med)
 m<-addProviderTiles(m,provider="OpenStreetMap.Mapnik")
-m<-addPolygons(m,popup=barrios_med@data$NOMBRE,weight = 1)
+m<-addPolygons(m,popup=o_db@data$NOMBRE,weight = 1)
 
 colores <- barrios_med@data$C4G
-m<-addPolygons(m,popup=barrios_med@data$NOMBRE, color = "black", fillColor=colores,weight = 2, fillOpacity = 0.4)
+m<-addPolygons(m,popup=o_db@data$NOMBRE, color = "black", fillColor=colores,weight = 2, fillOpacity = 0.4)
 m
 
 save(m, file="./exports/m.RData")

@@ -73,6 +73,9 @@ for(i in (1:length(barrios))){
 clase_c<-count(df2, CLASE)
 clase_c[order(-clase_c$n),]
 count(df2, GRAVEDAD)
+
+sum(f[f$GRAVEDAD == "SOLO DAÑOS",]$total)/5
+
 ```
 Se decide que el objeto de estudio es Medellín y sus 16 comunas.
 
@@ -185,6 +188,20 @@ clust.mat <- as.data.frame(clust.mat)
 
 
 ```{r}
+grouped_df%>%
+  group_by(C3G)%>%
+  summarise(
+    Atropellos = mean(Atropello),
+    Caidas = mean(`Caída Ocupante`),
+    Choques = mean(Choque),
+    Volcamientos = mean(Volcamiento),
+    Otros = mean(Otro),
+    number = n()
+  )
+```
+
+
+```{r}
 cluster_df$Total <- rowSums(cluster_df[,1:6])
 grouped_df <- merge(cluster_df, clust.mat,by=0,all = T)
 colnames(grouped_df)[1] <- "BARRIO"
@@ -216,7 +233,22 @@ grouped_df%>%
     Caidas = sd(`Caída Ocupante`),
     Choques = sd(Choque),
     Volcamientos = sd(Volcamiento),
-    Otros = sd(Otro)
+    Otros = sd(Otro),
+    number = n()
+  )
+```
+
+
+```{r}
+grouped_df%>%
+  group_by(C5G)%>%
+  summarise(
+    Atropellos = sd(Atropello),
+    Caidas = sd(`Caída Ocupante`),
+    Choques = sd(Choque),
+    Volcamientos = sd(Volcamiento),
+    Otros = sd(Otro),
+    number = n()
   )
 ```
 
