@@ -19,6 +19,246 @@ library(MASS)
 ## Lectura base por días:
 
 ```{r}
+df.barrio <- read.csv("barrios_dia_esp.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
 
+df.comuna <- read.csv("comunas_dias_esp.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+
+dias.especiales <-  read.csv("dias_espe.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+
+df.barrio <- df.barrio[,c(-1,-10)] 
+df.comuna<-df.comuna[,c(-1,-10)] 
+
+```
+
+
+## Aplicación del modelo:
+
+## Modelo Barrios
+
+
+## Función de modelo
+
+
+```{r}
+library(magrittr)
+df.comuna %<>% mutate(DIA_NUM = as.factor(DIA_NUM))
+df.comuna %<>% mutate(MES = as.factor(MES))
+df.comuna %<>% mutate(especial = as.factor(especial))
+
+
+df.barrio %<>% mutate(DIA_NUM = as.factor(DIA_NUM))
+df.barrio %<>% mutate(MES = as.factor(MES))
+df.barrio %<>% mutate(especial = as.factor(especial))
+```
+
+experiments
+```{r}
+library(gamlss)
+tr_data <- filter(df.comuna, PERIODO!=2018)
+va_data <- filter(df.comuna, PERIODO==2018)
+
+test_df <- filter(df.comuna, COMUNA=="")
+formulas = c(formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+DIA+MES+PERIODO"),
+            formula("total~DIA_NUM+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+MES+DIA"),
+            formula("total~DIA_NUM+MES")
+)
+
+mse_tr.v <- c()
+mse_val.v <- c()
+for(formula in formulas){
+  model <- gamlss(formula = formula, data = tr_data)
+  model2 <- gamlss(formula = formula, data = tr_data, family=PO(mu.link = "identity"))
+  #mse_tr.v  <- c(mse_tr.v, mean((tr_data$total - predict(poisson.model, new=tr_data))^2))
+  #m.mse_va <- mean((va_data$total - predict(model,data= va_data))^2)
+  #mse_val.v <- c(mse_val.v, mean((va_data$total - predict(poisson.model,new= va_data))^2))
+  
+  mse_tr.v  <- c(mse_tr.v, mean((tr_data$total - predict(model, newdata=tr_data, data=tr_data))^2))
+  #m.mse_va <- mean((va_data$total - predict(model,data= va_data))^2)
+  mse_val.v <- c(mse_val.v, mean((va_data$total - predict(model,newdata= va_data, data=tr_data))^2))
+  
+  mse_tr.v  <- c(mse_tr.v, mean((tr_data$total - predict(model2, newdata=tr_data, data=tr_data))^2))
+  #m.mse_va <- mean((va_data$total - predict(model,data= va_data))^2)
+  mse_val.v <- c(mse_val.v, mean((va_data$total - predict(model2,newdata= va_data,data=tr_data))^2))
+}
+
+results <- data.frame(mse_tr = mse_tr.v , mse_va = mse_val.v)
+#results$form <- formula
+```
+
+
+## Función de modelo
+```{r}
+adj_model_com <- function(formulas, tr_data, val_data){
+  
+    ## determina si el modelo es para Comunas o Barrios
+  if("COMUNA" %in% colnames(tr_data)){
+    com <- unique(tr_data$COMUNA)
+  }else{
+    com <- unique(tr_data$BARRIO)
+  }
+  
+  results <- data.frame(matrix(ncol=7, nrow=0))
+  form <- formulas
+
+  for(co in com){
+    print(co)
+    if("COMUNA" %in% colnames(tr_data)){
+      
+      temp_tr <- filter(tr_data, COMUNA==co)
+      temp_va <- filter(val_data, COMUNA==co)
+      ub_name <- "Comuna"
+    }
+    else{
+      temp_tr <- filter(tr_data, BARRIO==co)
+      temp_va <- filter(val_data, BARRIO==co)
+      ub_name <- "Barrio"
+    }
+    
+    results2 <- data.frame(matrix(ncol=7, nrow=0)) #matriz de resultados para cada formula
+    
+    if(co %in% c("El Poblado","Guayabal", "La Candelaria", "Laureles Estadio")){
+      formulas <- form[1:5]
+    }else{
+      formulas <- form[-c(1:5)]
+    }
+    
+    for(formula in formulas){
+      mse_tr.v  <- c()
+      mse_val.v <- c()
+      
+      
+      #model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
+      model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
+      model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
+      
+      list_models = list(model2, model3)
+      
+      
+       
+       #mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr,data=temp_tr))^2))
+      #mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata= temp_va,data=temp_tr))^2))
+    
+      
+      
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model2, newdata=temp_tr,data=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model2,newdata= temp_va,data=temp_tr))^2))
+      
+      
+      
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model3, newdata=temp_tr,data=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model3,newdata= temp_va,data=temp_tr))^2))
+      
+      
+      temp <- data.frame(mse_tr = mse_tr.v , mse_va = mse_val.v)
+      temp$modelo <- list_models
+      
+      best_model <- filter(temp, mse_va == min(temp$mse_va))
+      best_model$com_bar <- co
+      best_model$family <- best_model$model[[1]]$family[1]
+      best_model$form <- format(formula(best_model$model[[1]], what = c("mu")))
+      results2 <- rbind(results2, best_model)
+    }
+    results <- rbind(results,  filter(results2, mse_va == min(results2$mse_va)))
+    
+      
+  }
+  
+  trans <- function(x) as.numeric(as.character(x))
+  results[, 1:2] <- sapply(results[, 1:2], trans)
+  #COnvierte los errores a variables numericas
+  
+  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Family", "Formula")
+  results <- results[,c(4,1,2,5,6,3)]
+  return(results)
+  
+
+}
+  
+```
+
+##MODELO PARA COMUNA_DIAS TR=2014-2017
+```{r}
+TR_data <- filter(df.comuna, PERIODO!=2018)
+VA_data <- filter(df.comuna, PERIODO==2018)
+
+formulas = c(formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+DIA+MES+PERIODO"),
+            formula("total~DIA_NUM+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+MES+DIA"),
+            formula("total~DIA_NUM+MES")
+            ,formula("total~DIA_NUM+MES+especial")
+            #,formula("total~DIA_NUM+especial")
+            ,formula("total~DIA_NUM+especial+DIA+MES+PERIODO+I(PERIODO^2)")
+            ,formula("total~DIA_NUM+especial+MES+PERIODO+I(PERIODO^2)")
+            ,formula("total~DIA_NUM+especial+MES+DIA")
+)
+com.dia.1 <- adj_model_com(formulas, TR_data, VA_data)
+com.dia.1.vis <- com.dia.1[,-6]
+```
+
+
+##MODELO PARA COMUNA_DIAS TR=2014-2016
+```{r}
+TR_data <- filter(df.comuna, PERIODO!=2018 & PERIODO!=2017)
+VA_data <- filter(df.comuna, PERIODO==2018 | PERIODO==2017)
+
+com.dia.2 <- adj_model_com(formulas, TR_data, VA_data)
+com.dia.2.vis <- com.dia.2[,-6]
+```
+
+
+
+```{r}
+#save(com.dia.1, file = "com.dia.1.RData")
+#save(com.dia.2, file = "com.dia.2.RData")
+save(com.dia.1, com.dia.2, file = "Modelos_finales/com.dia.1_2.RData")
+```
+
+
+##MODELO PARA BARRIOS_DIAS TR=2014-2017
+```{r}
+TR_data <- filter(df.barrio, PERIODO!=2018 & PERIODO!=2017)
+VA_data <- filter(df.barrio, PERIODO==2018 | PERIODO==2017)
+
+formulas = c(formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+DIA+MES+PERIODO"),
+            formula("total~DIA_NUM+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+MES+DIA"),
+            formula("total~DIA_NUM+MES")
+)
+
+dates <- filter(df.barrio,BARRIO=="María Cano Carambolas")
+#ts <- seq.POSIXt(as.POSIXlt("2014-01-01"), as.POSIXlt("2018-12-31"), by="day")
+#ts <- format.POSIXct(ts,'%y-%m-%d')
+dates$FECHA<-as.Date(dates$FECHA)
+df <- data.frame(FECHA=seq(as.Date('2014-01-01'),as.Date('2018-01-31'),by = 1))
+data_with_missing_times <- full_join(df,dates)
+#bar.dia.1 <- adj_model_com(formulas, TR_data, VA_data)
+#bar.dia.1.vis <- bar.dia.1[,-6]
+```
+
+
+##MODELO PARA BARRIOS_DIAS TR=2014-2016
+```{r}
+TR_data <- filter(df.comuna, PERIODO!=2018 & PERIODO!=2017)
+VA_data <- filter(df.comuna, PERIODO==2018 | PERIODO==2017)
+
+formulas = c(formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+DIA+MES+PERIODO"),
+            formula("total~DIA_NUM+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~DIA_NUM+MES+DIA"),
+            formula("total~DIA_NUM+MES")
+)
+bar.dia.2 <- adj_model_com(formulas, TR_data, VA_data)
+bar.dia.2.vis <- bar.dia.1[,-6]
+```
+
+
+```{r}
+#modeltest <- gamlss(formula = formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO+especial"), data = df.comuna[df.comuna$COMUNA=="El Poblado",], family=PO(mu.link = "identity"))
+
+modeltest <- glm(formula = formula("total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO+especial"), data = df.comuna[df.comuna$COMUNA=="El Poblado",])
 ```
 

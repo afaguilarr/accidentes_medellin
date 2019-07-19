@@ -31,15 +31,30 @@ df <-  read.csv("df_depurada_1.csv", header = T,stringsAsFactors = FALSE, encodi
 df$SEMANA<- as.numeric(strftime(df$FECHA,"%V"))
 ```
 
+```{r}
+library(magrittr)
+#df %<>% mutate(MES = as.factor(MES))
+df %<>% mutate(SEMANA = as.factor(SEMANA))
+```
+
 ## Funcion de agrupamiento de datos segun conjunto espacial y escala temporal
 ```{r}
-data_prep <- function(dataf, agr_esp, agr_temp){
-  df1 <- dataf%>%
-    group_by(!!as.name(agr_esp),!!as.name(agr_temp),PERIODO)%>%
-    summarise(
-      total = n(),
-    )
+data_prep <- function(dataf, agr_esp, agr_temp, agr_ext=NA){
+  if(is.na(agr_ext)){
+    df1 <- dataf%>%
+      group_by(!!as.name(agr_esp),!!as.name(agr_temp),PERIODO)%>%
+      summarise(
+        total = n(),
+      )
+  }else{
+    df1 <- dataf%>%
+      group_by(!!as.name(agr_esp),!!as.name(agr_temp),!!as.name(agr_ext),PERIODO)%>%
+      summarise(
+        total = n(),
+      )
+  }
   
+  if(FALSE){
   df2 <- dataf%>% #Df con conteo degun clase de accidente
     group_by(!!as.name(agr_esp),!!as.name(agr_temp), CLASE,PERIODO)%>%
     summarise(
@@ -47,63 +62,57 @@ data_prep <- function(dataf, agr_esp, agr_temp){
     )
   df2 <- spread(data = df2, key = CLASE, total) %>%
     mutate_all(~replace(., is.na(.), 0))
+  }
+
   
-  df3 <- dataf%>% #Df con conteo degun clase de accidente
-    group_by(!!as.name(agr_esp),!!as.name(agr_temp), GRAVEDAD,PERIODO)%>%
-    summarise(
-      total = n(),
-    )
-  df3 <- spread(data = df3, key = GRAVEDAD, total) %>%
-    mutate_all(~replace(., is.na(.), 0))
+  final_df <- (cbind(df1))
   
-  final_df <- (cbind(df1,df2, df3))
-  
-  return(final_df[,-c(5,6,7,14,15,16)])
-    
+  #return(final_df[,-c(5,6,7,14,15,16)])
+  return(final_df)  
 }
 ```
 
 ## Creacion dfs:
 
+
+
 ```{r}
 barrios_sem <- df
 
-barrios_sem <- filter(data_prep(barrios_sem, quote(BARRIO), quote(SEMANA)), BARRIO!="0" & BARRIO!="Sin Nombre") 
-colnames(barrios_sem)[6] <- "Caida_ocupante"
-colnames(barrios_sem)[13] <- "SOLO_DANOS"
+barrios_sem <- filter(data_prep(barrios_sem, quote(BARRIO), quote(SEMANA), quote(MES)), BARRIO!="0" & BARRIO!="Sin Nombre") 
+
 
 barrios_mes <- df
 barrios_mes <- filter(data_prep(barrios_mes, quote(BARRIO), quote(MES)), BARRIO!="0" & BARRIO!="Sin Nombre") 
-colnames(barrios_mes)[6] <- "Caida_ocupante"
-colnames(barrios_mes)[13] <- "SOLO_DANOS"
+
 ```
 
 ```{r}
 comuna_mes <- df
 comuna_mes <- filter(data_prep(comuna_mes, quote(COMUNA), quote(MES))) 
-colnames(comuna_mes)[6] <- "Caida_ocupante"
-colnames(comuna_mes)[13] <- "SOLO_DANOS"
+
 
 comuna_sem <- df
-comuna_sem <- filter(data_prep(comuna_sem, quote(COMUNA), quote(SEMANA))) 
-colnames(comuna_sem)[6] <- "Caida_ocupante"
-colnames(comuna_sem)[13] <- "SOLO_DANOS"
+comuna_sem <- filter(data_prep(comuna_sem, quote(COMUNA), quote(SEMANA), quote(MES))) 
+
 ```
 
-
-
+```{r}
+write.csv(barrios_mes, file = "barrios_mes.csv", row.names=F)
+write.csv(comuna_mes, file = "comunas_mes.csv", row.names=F)
+write.csv(barrios_mes, file = "barrios_sem.csv", row.names=F)
+write.csv(comuna_sem, file = "comunas_sem.csv", row.names=F)
+```
 
 ## Aplicación del modelo:
 
 ## Modelo Barrios
 
-
-
 ## Función de modelo
 ```{r}
-adj_model_com <- function(formula, tr_data, val_data){
+adj_model_com <- function(formulas, tr_data, val_data){
   
-  ## determina si el modelo es para Comunas o Barrios
+    ## determina si el modelo es para Comunas o Barrios
   if("COMUNA" %in% colnames(tr_data)){
     com <- unique(tr_data$COMUNA)
   }else{
@@ -111,8 +120,10 @@ adj_model_com <- function(formula, tr_data, val_data){
   }
   
   results <- data.frame(matrix(ncol=7, nrow=0))
+  
 
   for(co in com){
+    print(co)
     if("COMUNA" %in% colnames(tr_data)){
       
       temp_tr <- filter(tr_data, COMUNA==co)
@@ -124,33 +135,62 @@ adj_model_com <- function(formula, tr_data, val_data){
       temp_va <- filter(val_data, BARRIO==co)
       ub_name <- "Barrio"
     }
-
     
-    #model <- gamlss(formula = formula, data = temp_tr)
-    poisson.model<-glm(formula, temp_tr, family = poisson(link = "identity"))
+    results2 <- data.frame(matrix(ncol=7, nrow=0)) #matriz de resultados para cada formula
     
+    if(co %in% c("Batallón Girardot")){
+      #formulas <- formulas[1:5]
+    }
+    for(formula in formulas){
+      mse_tr.v  <- c()
+      mse_val.v <- c()
+      
+      
+      #model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
+      model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
+      model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
+      
+      list_models = list(model2, model3)
+      
+      
+       
+       #mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model1, newdata=temp_tr,data=temp_tr))^2))
+      #mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model1,newdata= temp_va,data=temp_tr))^2))
     
-    #m.mse_tr <- exp(coef(model, what = 'sigma'))**2
-    mp.mse_tr <- mean((temp_tr$total - predict(poisson.model, new=temp_tr))^2)
-    #m.mse_va <- mean((temp_va$total - predict(model,data= temp_va))^2)
-    mp.mse_va <- mean((temp_va$total - predict(poisson.model,new= temp_va))^2)
+      
+      
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model2, newdata=temp_tr,data=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model2,newdata= temp_va,data=temp_tr))^2))
+      
+      
+      
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model3, newdata=temp_tr,data=temp_tr))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model3,newdata= temp_va,data=temp_tr))^2))
+      
+      
+      temp <- data.frame(mse_tr = mse_tr.v , mse_va = mse_val.v)
+      temp$modelo <- list_models
+      
+      best_model <- filter(temp, mse_va == min(temp$mse_va))
+      best_model$com_bar <- co
+      best_model$family <- best_model$model[[1]]$family[1]
+      best_model$form <- format(formula(best_model$model[[1]], what = c("mu")))
+      results2 <- rbind(results2, best_model)
+    }
+    results <- rbind(results,  filter(results2, mse_va == min(results2$mse_va)))
     
-    
-    row = as.data.frame(matrix(c(co, mp.mse_tr, mp.mse_va), nrow=1))
-    row$modelo_p <-  list(poisson.model)
-    #row$modelo <- list(model)
-    
-    results <- rbind(results, row)
-    
+      
   }
-  colnames(results) <- c(ub_name, "MSE_Poisson_tr", "MSE_Poisson_va","Reg_poisson")
   
   trans <- function(x) as.numeric(as.character(x))
+  results[, 1:2] <- sapply(results[, 1:2], trans)
+  #COnvierte los errores a variables numericas
   
-  results[, 2:3] <- sapply(results[, 2:3], trans)
+  colnames(results) <- c("MSE.tr", "MSE.va","Reg.obj", ub_name, "Family", "Formula")
+  results <- results[,c(4,1,2,5,6,3)]
   return(results)
   
-  
+
 }
 ```
 
@@ -165,6 +205,11 @@ for(co in com){
     
   print(p)
 }
+ggplot(data = comuna_mes, mapping = aes(x = MES, y = total, color = factor(PERIODO))) +
+     geom_line() +
+     facet_wrap(~ COMUNA) +
+     theme_bw() +
+     theme(panel.grid = element_blank())
 
   
 ```
@@ -186,45 +231,66 @@ ggplot(data = comuna_ano, aes(x = COMUNA, y= totalsito, fill = factor(PERIODO)))
 
 ## Modelo para las comunas
 ###semana 
-This one works 
-Sin periodo es mejor
+
 ```{r}
-tr_data <- filter(comuna_sem, PERIODO!=2018)[,1:4]
-va_data <- filter(comuna_sem, PERIODO==2018)[,1:4]
-#tr_data <- filter(comuna_sem, PERIODO!=2018 & PERIODO!=2017)[,1:4]
-#va_data <- filter(comuna_sem, PERIODO==2018 | PERIODO==2017)[,1:4]
+TR_data <- filter(comuna_sem, PERIODO!=2018)
+VA_data <- filter(comuna_sem, PERIODO==2018)
 
-formula = formula("total~SEMANA")
+formulas = c(formula("total~SEMANA+I(PERIODO^2)+MES+PERIODO"),
+            formula("total~SEMANA+MES"),
+            formula("total~SEMANA+MES+PERIODO"),
+            formula("total~SEMANA+I(PERIODO^2)+PERIODO")
+            #,formula("total~SEMANA+PERIODO+MES+I(MES^2)")
+            #,formula("total~SEMANA+MES+I(MES^2)")
+            )
 
-com_sem_mod2 <- adj_model_com(formula, tr_data, va_data)
-#MSE_res_sem <- c(mean(com_res_sem$MSE_Poisson_tr), mean(com_res_sem$MSE_Poisson_va))
+com.sem.1 <- adj_model_com(formulas, TR_data, VA_data)
+com.sem.1.vis <- com.sem.1[,-6]
+```
+
+```{r}
+TR_data <- filter(comuna_sem, PERIODO!=2018 &PERIODO!=2017)
+VA_data <- filter(comuna_sem, PERIODO==2018| PERIODO==2017)
+
+com.sem.2 <- adj_model_com(formulas, TR_data, VA_data)
+com.sem.2.vis <- com.sem.2[,-6]
+
 
 ```
 ```{r}
 #MSE_res_sem
-save(com_sem_mod2, file="./Modelos/comuna_sem_mod2.RData")
+save(com.sem.1,com.sem.2, file="./Modelos_finales/com.sem.1_2.RData")
 ```
 
 
 
-###mes
-Involucrar el periodo empeora el modelo
-no cumple con 2018-2017 validacion
+###MES
+
 ```{r}
-tr_data <- filter(comuna_mes, PERIODO!=2018)[,1:12]
-va_data <- filter(comuna_mes, PERIODO==2018)[,1:12]
-tr_data <- filter(comuna_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
-va_data <- filter(comuna_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
+TR_data <- filter(comuna_mes, PERIODO!=2018)
+VA_data <- filter(comuna_mes, PERIODO==2018)
 
-formula = formula("total~MES")
 
-com_mes_mod1 <- adj_model_com(formula, tr_data, va_data)
-#MSE_res_mes <- c(mean(com_res_mes$MSE_Poisson_tr), mean(com_res_mes$MSE_Poisson_va), mean(com_res_mes$MSE_tr), mean(com_res_mes$MSE_va))
+formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO"),
+            formula("total~MES"),
+            formula("total~MES+PERIODO")
+            ,formula("total~MES+I(MES^2)+PERIODO")
+            ,formula("total~MES+I(MES^2)")
+)
+com.mes.1 <- adj_model_com(formulas, TR_data, VA_data)
+com.mes.1.vis <- com.mes.1[,-6]
+```
+
+```{r}
+TR_data <- filter(comuna_mes, PERIODO!=2018 & PERIODO!=2017)
+VA_data <- filter(comuna_mes, PERIODO==2018 | PERIODO==2017)
+com.mes.2 <- adj_model_com(formulas, TR_data, VA_data)
+com.mes.2.vis <- com.mes.2[,-6]
 ```
 
 ```{r}
 #MSE_res_mes
-save(com_mes_mod1, file="./Modelos/comuna_mes_mod1.RData")
+save(com.mes.1,com.mes.2, file="./Modelos_finales/com.mes.1_2.RData")
 ```
 
 ## Modelo barrios 
@@ -232,17 +298,30 @@ save(com_mes_mod1, file="./Modelos/comuna_mes_mod1.RData")
 ###mes
 
 ```{r}
-tr_data <- filter(barrios_mes, PERIODO!=2018)[,1:4]
-va_data <- filter(barrios_mes, PERIODO==2018)[,1:4]
-tr_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
-va_data <- filter(barrios_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
+TR_data <- filter(barrios_mes, PERIODO!=2018)[,1:4]
+VA_data <- filter(barrios_mes, PERIODO==2018)[,1:4]
 
 
-formula = formula("total~MES")
+formulas = c(formula("total~I(PERIODO^2)+MES+PERIODO"),
+            formula("total~MES"),
+            formula("total~MES+PERIODO")
+            ,formula("total~MES+I(MES^2)+PERIODO")
+            ,formula("total~MES+I(MES^2)")
+)
 
-bar_mes_mod1 <- adj_model_com(formula, tr_data, va_data)
-#MSE_mes_bar <- c(mean(bar_mes$MSE_Poisson_tr), mean(bar_mes$MSE_Poisson_va))
+bar.mes.1 <- adj_model_com(formulas, TR_data, VA_data)
+bar.mes.1.vis <- bar.mes.1[,-6]
+
+
 ```
+
+```{r}
+TR_data <- filter(barrios_mes, PERIODO!=2018 & PERIODO!=2017)[,1:4]
+VA_data <- filter(barrios_mes, PERIODO==2018 | PERIODO==2017)[,1:4]
+bar.mes.2 <- adj_model_com(formulas, TR_data, VA_data)
+bar.mes.2.vis <- bar.mes.2[,-6]
+```
+
 
 ```{r}
 #MSE_mes_bar

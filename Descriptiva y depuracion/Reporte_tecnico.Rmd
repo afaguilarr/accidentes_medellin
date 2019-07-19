@@ -2,23 +2,42 @@
 title: "Reporte Tecnico"
 author: "J_Munera"
 date: "6/11/2019"
-output: html_document
+output: pdf_document
+
 ---
 
-
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
 ```
 
-```{r}
+\newpage
+
+```{r, include=F}
 ##Carga de paquetes previos
-
+library(kableExtra)
 library(tidyverse)
+require(gridExtra)
 ```
 
-##Depuración de la base de datos
-```{r}
+\section{Introducción}
+
+Los incidentes viales causan lesiones fatales y no fatales, con efectos en salud, bienestar y productividad (Espinosa López, Cabrera Arana & Velásquez Osorio, 2017), sumado a ello, la rápida urbanización, el cambio tecnológico y el crecimiento económico en los diferentes países han llevado a un crecimiento sustancial en la densidad vehicular y en la complejidad del tráfico en las vías de éstos (Hyder & Vecino-Ortiz, 2014). En este reporte se presenta una aplicación de los modelos GAMLSS (Generalized Additive Models for Location, Shape and Scale) que permiten asumir distribuciones estadísticas para la variable respuesta diferentes a la normal (Barajas, Torres, Arteaga & Castro, 2015) para analizar los datos de accidentalidad en Medellín: los datos utilizados están expuestos en las bases de datos del portal Geomedellín (Portal geográfico del municipio de Medellín) (“GEO medellín”, 2019) y contienen información referente a múltiples siniestros, en los que se detalla el tipo de accidente, dónde y cuándo ocurrió. Este análisis fue realizado con el fin de construir dos sistemas, uno que prediga el número de accidentes tomando como entradas una ventana y una resolución temporal específicas, además de una zona espacial que puede ser un barrio o comuna de Medellín; y otro que agrupe barrios con características similares referentes a los tipos de accidentes que ocurren allí.
+
+
+\section{Justificación}
+La accidentalidad constituye una problemática común a la mayor parte de las sociedades modernas que anualmente genera grandes costos en vidas humanas, problema que no es ajeno a la ciudad de Medellín y que causa en promedio 220 muertes al año, 22071 Heridos de gravedad y 18410 casos de solo daños materiales. Lo anterior evidencia un problema que no solo pone en riesgo la vida de los habitantes, sino que además pone grandes cargas en el sistema de salud y causa pérdidas millonarias en daños e indemnizaciones. Peter Drucker señala que «Lo que no se mide, no se puede cambiar, lo que no se puede cambiar no se puede mejorar», por las cifras antes mencionadas se puede deducir que hemos logrado avances en la medición y aunque se evidencia en estudios como los realizados por Erdogan (Erdogan, Yilmaz, Baybura & Gullu, 2008) que la medición está lejos de ser ideal, esto no significa que no se pueda dar un primer paso a el cambio.
+Para dar los primeros pasos en el camino a la mejora es importante tomar los datos medidos y depurarlos con el objeto de entenderlos, es por esto que se procede en un inicio a realizar un estudio exploratorio de los datos y un análisis descriptivo de éstos, estudios que proveen las pautas para el diseño de los modelos predictivos que serán presentados más adelante. Los resultados encontrados por los modelos descriptivos permiten no solo entendendimiento a los autores de este trabajo, pero le permite a estos presentar con datos concretos una imagen de la accidentalidad que se ajusta a la realidad y de una manera simple expone los problemas de la misma en un medio simple de consumir como lo son: los mapas y los gráficos.
+Los modelos predictivos por otro lado van más allá de los dicho por Drucker, ya que la estadística nos permite usar datos del pasado para tener una idea de lo que puede llegar a ser, se extiende entonces la fase de medición al futuro con el objeto de generar una plataforma que pueda servir como palanca para la prevención y la mejora de la accidentalidad y de sus consecuencias.
+
+
+
+\section{Objetivos}
+El análisis y los sistemas que se pretenden construir sólo abarcan el área urbana de Medellín correspondiente a sus 16 comunas y sus respectivos barrios.
+
+- Construir un sistema que prediga el número de accidentes tomando como entradas una ventana y una resolución temporal específicas, además de una zona espacial que puede ser un barrio o comuna de Medellín.
+- Elaborar un sistema que agrupe barrios con características similares en razón de los tipos de accidentes que tienen lugar en estos.
+
+```{r, include=F}
 ##Lectura de las 5 bases de datos desde el drectorio
 #getwd() #CHECKEAR QUE EL DIRECTORIO SEA: "/accidentes_medellin/Descriptiva y depuracion"
 
@@ -29,7 +48,7 @@ df <- do.call(rbind, lapply(path, function(x) read.csv(x, stringsAsFactors = FAL
 ```
 
 
-```{r setup, include=FALSE}
+```{r, include=F}
 #df$RADICADO <- as.character(df$RADICADO)
 #Se cambia el nombre de la primera columna
 df<- df %>% rename(OBJECTID = X.U.FEFF.OBJECTID)
@@ -40,20 +59,795 @@ df<- df %>%
     mutate_at(vars(starts_with("OBJECT")),funs(as.character))
 ```
 
-
-Dado que el presente trabajo se centrara sólo en las zonas urbanas de Medellín se procede trabaja solo con los registros cuyo GEOCOD  corresponda a "ZONA RURAL".
-
-```{r}
+```{r, include=F}
 df2 <- df[df$TIPO_GEOCOD!="ZONA RURAL",]
 ##Se crea df2, nueva base de datos con las depuraciones respectivas.
 ```
 
 
-Se considera que "CON MUERTO" es equivalente a "MUERTO" para la columna "GRAVEDAD":
-Se considera que "Caida Ocupante" es equivalente a "Caida de Ocupante" en la columna "CLASE"
-```{r}
+```{r, include=F}
 
 df2[df2$GRAVEDAD == "CON MUERTO" ,]$GRAVEDAD <- "MUERTO"
 df2[df2$CLASE == "Caida Ocupante" | df2$CLASE == "Caída de Ocupante" ,]$CLASE <- "Caída Ocupante"
 df2[df2$CLASE == "Choque y Atropello" | df2$CLASE ==  "Choque ",]$CLASE = "Choque"
 ```
+
+
+```{r, include=F}
+barrios <-c("Aures No. 2", "Asomadera No. 1" ,"Barrio de Jesús","B. Cerro  El Volador" ,"Berlin","Bomboná No. 1","Campo Valdés No.2","Manrique Central No.1","Manrique Central No.2","Moscú No.1","Moscú No.2",
+"Nueva Villa de La Iguaná","Santa María de Los Ángeles","Santo Domingo Savio No.1","Versalles No.1","Versalles No.2","Villa Liliam")
+
+reemplazo <- c("Aures No.2", "Asomadera No.1", "Barrios de Jesús","B. Cerro El Volador" ,"Berlín","Bomboná No.1","Campo Valdés No. 2","Manrique Central No. 1","Manrique Central No. 2","Moscú No. 1","Moscú No. 2",
+"Nueva Villa de la Iguaná","Santa María de los Ángeles","Santo Domingo Savio No. 1","Versalles No. 1","Versalles No. 2","Villa Lilliam")
+
+for(i in (1:length(barrios))){
+  df2[!is.na(df2$BARRIO) & df2$BARRIO == barrios[i],]$BARRIO = reemplazo[i]
+}
+```
+
+```{r, include=F}
+##Los datos relevantes que se excluyen corresponden a los 5 corregimientos, que definen la zona rural de medellín
+
+comunas <- count(df2, COMUNA) 
+#head(comunas[order(-comunas$n),],25) #Numero de accidentes por comuna/corregimiento
+comunas_relevantes <- head(comunas[order(-comunas$n),][1], 16) 
+#df3 <- df2 #saving df2
+df2 <- df2[df2$COMUNA %in% as.vector(unlist(comunas_relevantes)),]
+
+```
+
+
+
+```{r, include=F}
+##NA inspection
+##ESta es la lista de los NA y los barrios con NA's o espacios vacios, si desea eliminarlos o hacerles imputación más adelante
+df2[df2 == ""] <- NA
+na_DF <- df2[rowSums(is.na(df2)) > 0,]# Las columnas con NA son diseño (gran mayoria) y clase
+final.df<- na.omit(df2[,-17]) #DF sin NAs
+final.df <- filter(final.df, BARRIO!="0" & BARRIO!="Sin Nombre") 
+print(paste("El numero de datos con NA es:" , as.character(dim(na_DF)[1])))
+
+```
+
+\section{4. Descripción de los datos}
+\subsection{4.1. La base de datos}
+
+Los datos se obtienen de la [página](https://geomedellin-m-medellin.opendata.arcgis.com/search?tags=movilidad) del portal [GeoMedellín](https://www.medellin.gov.co/geomedellin/) de la alcaldía de Medellín en su sección de datos abierto.  
+Se utilizan 5 bases de datos correspondientes a la Accidentalidad Georreferenciada de los años 2014 al 2018. Posee los siguientes  atributos:
+
+- OBJECTID: id de cada registro.
+- X: coordenada.
+- Y: coordenada.
+- RADICADO: código emitido por la secretaría de movilidad de Medellín.
+- FECHA.
+- HORA.
+- DIA.
+- PERIODO: año del siniestro.
+- CLASE: tipo de accidente
+- DIRECCION.
+- DIRECCION_ENC.
+- CBML: Código de ubicación del predio en la ciudad.
+- TIPO_GEOCOD.
+- GRAVEDAD: repercusiones del accidente
+- BARRIO.
+- COMUNA.
+- DISENO: clasificación del lugar del accidente.
+- DIA_NOMBRE.
+- MES.
+
+\subsection{4.2. Análisis y depuración}
+Dado que el presente trabajo se centrará sólo en las zonas urbanas de Medellín se procede trabajar unicamente con los registros cuyo atributo GEOCOD no corresponda a "ZONA RURAL" y su atributo COMUNA corresponda a alguna de las 16 comunas de Medellín.
+
+Se consideran los siguientes errores de imputación y se realizan las respectivas correcciones:   
+
+- Atributo CLASE:
+  - "Caida Ocupante” y “Caida de Ocupante” se considera equivalente a “Caída de Ocupante. 
+  - "$Choque "$  equivalente a "Choque".
+
+- Atributo GRAVEDAD:
+  - "CON MUERTO" se considera equivalente a "MUERTO".  
+  
+- Atributo BARRIO: se realizan los siguientes reemplazos.
+  + "Aures No. 2” por “Aures No.2”.
+  + "Asomadera No. 1” por “Asomadera No.1”.
+  + "Barrio de Jesús” por “Barrios de Jesús”.
+  + "B. Cerro  El Volador” por “B. Cerro El Volador”.
+  + "Berlin” por “Berlín”.
+  + "Bomboná No. 1” por “Bomboná No.1”.
+  + "Campo Valdés No.2” por “Campo Valdés No. 2”.
+  + "Manrique Central No.1” por “Manrique Central No. 1”.
+  + "Manrique Central No.2” por “Manrique Central No. 1”.
+  + "Moscú No.1” por “Moscú No. 1”.
+  + "Moscú No.2” por “Moscú No. 2”.
+  + "Nueva Villa de La Iguaná” por “Nueva Villa de la Iguaná”.
+  + "Santa María de Los Ángeles” por “Santa María de los Ángeles”.
+  + "Santo Domingo Savio No.1” por “Santo Domingo Savio No. 1”.
+  + "Versalles No.1” por “Versalles No. 1”. 
+  + "Versalles No.2” por “Versalles No. 2”. 
+  + "Villa Liliam” por “Villa Lilliam”.
+
+Además se encuentran valores nulos para los atributos DISEÑO y BARRIO. 
+El primero se descarta como un atributo relevante para los análisis del presente documento,  por lo que no será utilizado en ninguno de los modelos construidos en el trabajo y no se removerán las tuplas con DISEÑO nulo. Para la variable BARRIOS todas las tuplas correspondientes a valores faltantes o con valores “0” o “Sin Nombre” son descartadas.
+
+Tras las modificaciones mencionadas de los 209426 registros originales entre las bases de datos del 2014 al 2018, se utilizarán 203507 restantes en el análisis y en la cosntrucción de los modelos.
+
+\subsection{4.3 Análisis}
+
+Se considera que las siguientes variables no son de interes para la construcción de los modelos:
+
+- OBJECTID, CBML, RADICADO: son identificadores de los registros.
+- DIRECCION, DIRECCION_ENC, X, Y: hacen referencia al posicionamiento geográfico específico del accidente. Ya que los modelos buscan predecir a nivel de barrio y comuna esta información no es relevante. 
+- TIPO_GEOCOD: no presenta información variable. Al parecer indica malla vial y la dirección del accidente.
+- DISEÑO: presenta información relevante sobre la estructura vial de los accidentes. Esto podría ser relevante para un estudio sobre la GRAVEDAD del accidente, pero no se encontraron relaciones aparentes con otros atributos de la base que puedan ayudar a mejorar las predicciones.
+
+### Accidentalidad Anual
+
+```{r, include =FALSE, message = FALSE}
+table.temp <- final.df%>%
+  group_by(CLASE, PERIODO)%>%
+  summarise(
+    frecuencia = n(),
+  )
+table.temp2 <- df2 %>% group_by(PERIODO) %>% summarise(frec.abs = n())
+table.temp <- full_join(table.temp, table.temp2)
+table.temp$frec.abs <- round(table.temp$frecuencia/table.temp$frec.abs,3)
+#table.temp[order(table.temp$PERIODO),]
+```
+```{r}
+p<-ggplot(data =table.temp, aes(y= frecuencia, x = PERIODO,color=factor(CLASE)))+ labs(title = "Evolución de la accidentalidad por CLASE")+geom_point()+
+     geom_line()+ theme(legend.position="top")+
+  theme_bw()+
+  labs(color = "Clase")
+print(p)
+
+```
+
+Se evidencia que la evolución de la accidentalidad por cada clase no tiene un patrón de dependencia claro con la Clase de los accidentes. Los choques son el tipo de accidente más frecuente y tuvieron un leve crecimiento entre el 2014 y 2017 y luego decrecieron para el 2018.
+Las otras clases de accidentes no presentaron variaciones significativas con el paso de los años a excepción de talvez “atropello” y “otro” los que tuvieron mayores variaciones.
+
+
+
+```{r, include =FALSE, message = FALSE}
+table.temp <- final.df%>%
+  group_by(GRAVEDAD, PERIODO)%>%
+  summarise(
+    frecuencia = n(),
+  )
+table.temp2 <- df2 %>% group_by(PERIODO) %>% summarise(frec.abs = n())
+table.temp <- full_join(table.temp, table.temp2)
+table.temp$frec.abs <- round(table.temp$frecuencia/table.temp$frec.abs,3)
+table.temp[order(table.temp$PERIODO),]
+```
+```{r}
+p<-ggplot(data =table.temp, aes(y= frecuencia, x = PERIODO,color=factor(GRAVEDAD)))+ labs(title = "Evolución de la accidentalidad por CLASE")+geom_point()+
+     geom_line()+ theme(legend.position="top")+
+  theme_bw()+
+  labs(color = "Clase")
+print(p)
+
+```
+
+En general se denota una leve disminución en la cantidad de heridos desde el 2016 hasta el 2018, los accidentes con muertos y aquellos donde solo ocurrieron daños materiales no presentan cambios significativos. 
+
+### Evolución accidentalidad por meses
+
+```{r}
+table.temp <-  final.df %>%group_by(MES, PERIODO)%>%
+  summarise(
+    frecuencia = n(),
+  )
+p<-ggplot(data =table.temp, aes(y= frecuencia, x = MES,color=factor(PERIODO)))+ geom_point()+
+     geom_line()+ theme(legend.position="top")+
+  theme_bw()+
+  labs(color = "Clase")+
+  scale_x_discrete("Mes", limits=c(1:12))
+print(p)
+```
+Se puede apreciar que en terminos generales la accidentalidad para el año 2018 es siempre una de las dos más pequeñas independiente del mes. Esto y las leves diferencias de accidentalidad anual nos indican que el PERIODO podría ser relevante para los modelos predictivos. 
+
+Otra cosa a notar es que la accidentalidad parece tener un patron NO LINEAL para los tipos de accidentes, siendo muy bajo en Enero, creciendo hasta Marzo, disminuyendo nuevamente en Abril y Junio con un aumento en Mayo. Des Agosto a Octubre parece ser el punto para la accidentalidad, disminuye en el mes de Noviembre y aumenta nuevamente el Diciembre.
+
+
+```{r}
+table.temp <- final.df%>%
+  group_by(MES, PERIODO)%>%
+  summarise(
+    Accidentes = n(),
+  )
+
+ggplot(data=table.temp, aes(x=MES, y=Accidentes, fill=PERIODO)) +
+    geom_bar(stat="identity")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  labs(title="Accidentalidad mensual", y = "Numero accidentes")+
+  scale_x_discrete("Mes", limits=c(1:12))
+```
+
+
+Este comportamiento se repite para todos los años (aunque se marca un poco más en algunos). Esto nos dice que el MES podría ser variable relevante para la construcción de los modelos, pero su consideración podría ser categórica.
+
+
+```{r}
+table.temp <- final.df%>%
+  group_by(MES, CLASE)%>%
+  summarise(
+    Accidentes = n(),
+  )
+
+ggplot(data=table.temp, aes(x=MES, y=Accidentes, fill=CLASE)) +
+    geom_bar(stat="identity")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  labs(title="Accidentalidad mensual", y = "Numero accidentes")+
+  scale_x_discrete("Mes", limits=c(1:12))
+```
+CLASE no parece tener una variación notable con los meses.
+
+### Análisis de accidentalidad por día de la semana
+
+```{r}
+table.temp <- final.df%>%
+  group_by(DIA_NOMBRE)%>%
+  summarise(
+    Numero.Accidentes = n(),
+  )
+
+ggplot(data=table.temp, aes(x=DIA_NOMBRE, y=Numero.Accidentes)) +
+    geom_bar(stat="identity",fill="tomato")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  labs(title="Accidentalidad diaria", y = "Numero de accidentes", x = "Dia")
+```
+Existe una clara diferenciación entre la cantidad de accidentes según el día de la semana. El día domingo tiene una clara reducción de accidentes, lo cuál es acorde a lo esperable, ya que el día domingo al ser generalmente libre se suele ver menos circulacción por el area urbana de Medellín.
+
+### Accidentalidad para las Comunas
+
+```{r}
+table.temp <- final.df%>%
+  group_by(COMUNA)%>%
+  summarise(
+    Total.accidentes = n(),
+  )
+
+```
+
+```{r}
+ggplot(data=table.temp, aes(x=COMUNA, y=Total.accidentes)) +
+    geom_bar(stat="identity",fill="darkgreen")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title="Accidentes por comuna", y = "Numero de accidentes")
+```
+```{r}
+table.temp <- final.df%>%
+  group_by(COMUNA, CLASE)%>%
+  summarise(
+    Total.accidentes = n(),
+  )
+
+
+ggplot(data=table.temp, aes(x=COMUNA, y=Total.accidentes, fill=CLASE)) +
+    geom_bar(stat="identity")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title="Accidentes por comuna y clase", y = "Numero accidentes")
+
+```
+
+
+La Candelaria es donde ocurren la mayor cantidad de accidentes, con un número mayor a 40000. Las comunas en donde se presentan la menor cantidad de accidentes son las de Santa Cruz y Popular, seguidas por San Javier, con menos de 5000 accidentes en todos los casos. Otras comunas con valores de accidentalidad altos son las de Castilla y la de Laureles Estadio, por encima de los 20000 accidentes.  
+Se puede apreciar que la cantidad de accidentes difiere significativamente de una comuna a otra, con variaciones notables para cada clase de accidente. Se muestra una tabla de proporciones de estas a continuación:
+```{r}
+table.temp2 <- df2 %>% group_by(COMUNA) %>% summarise(frec.abs = n())
+table.temp <- full_join(table.temp, table.temp2)
+table.temp$frec.rel <- round(table.temp$Total.accidentes/table.temp$frec.abs,3)
+table.temp <- spread(table.temp[,-c(3,4)],CLASE,frec.rel)[,c(1:4,6,7,5)]
+#table.temp[order(table.temp$PERIODO),]
+kable(table.temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+Se puede ver que hay variaciones de hasta el ~10% para Atropellos, del ~7% para "Otros" accidentes y del ~30% para los choques. Estas diferenccias para las comunas es esperable se repita para los barrios e incluso se marque más profundamente, esto indica diferencias entre la cantidad y proporciones de la CLASE de accidentes significativas lo que nos dice que un agrupamiento por este atributo es relevante.
+
+### Accidentalidad por barrios
+
+
+```{r}
+table.temp <- final.df%>%
+  group_by(BARRIO)%>%
+  summarise(
+    Numero.Accidentes = n(),
+  )
+barrios <- (table.temp[order(table.temp$Numero.Accidentes)[250:267],])[,1]
+
+table.temp <- table.temp[table.temp$BARRIO %in%barrios$BARRIO ,]
+
+ggplot(data=table.temp, aes(x=BARRIO, y=Numero.Accidentes)) +
+    geom_bar(stat="identity",fill="tomato")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title="Accidentalidad por barrios", y = "Numero de accidentes", x = "Barrios")
+
+
+table.temp <- final.df[final.df$BARRIO %in%barrios$BARRIO ,]%>%
+  group_by(BARRIO, CLASE)%>%
+  summarise(
+    Total.accidentes = n(),
+  )
+
+
+ggplot(data=table.temp, aes(x=BARRIO, y=Total.accidentes, fill=CLASE)) +
+    geom_bar(stat="identity")+theme_minimal()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title="Accidentes por por barrios y clase", y = "Numero accidentes")
+```
+En este gráfico se presentan los datos para 18 barrios de Medellín en donde hay mayor accidentalidad. El barrio que tiene una mayor accidentalidad es "La Candelaria", superando los 5000 accidentes. Otros barrios con una alta accidentalidad son: "Caribe" y "Campor Amor" y "Naranjal". 
+
+Se confirma que hay variaciones significativas en la accidentalidad por BARRIO y CLASE.
+
+A continuación se muestra una tabla con las variaciones de las proporciones de accidentes según la clase y el tipo de Accidente.
+
+Se denota que dato el bajo número de accidentes con Incendio, esta no es una categoría relevante para diferencias los barrios por grupos (Se expandirá en la sección 6).
+
+```{r}
+table.temp2 <- final.df[final.df$BARRIO %in%barrios$BARRIO ,]%>% 
+  group_by(BARRIO) %>% summarise(frec.abs = n())
+table.temp <- full_join(table.temp, table.temp2)
+table.temp$frec.rel <- round(table.temp$Total.accidentes/table.temp$frec.abs,3)
+table.temp<-(spread(table.temp[,-c(3,4)],CLASE,frec.rel))[,c(1:4,6,5)]
+kable(table.temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+
+```
+
+\section{5. Modelos predictivos }
+Como notamos en el análisis descriptivo existe una variabilidad notable a nivel de accidentalidad para cada columna y para cada barrio. Por ello se considera que crear un modelo predictivo específico para cada columna/barrio proveerá las mejores estimaciones de accidentalidad.
+
+Dado que el objetivo es predecir la accidentalidad a nivel diario, mensual o semanal; se construirán modelos que predigan el total de accidentes en cada uno de los rangos temporales es decir se crearán modelos específicos para cada comuna/barrio según la categoría temporal.
+
+En cada uno de estos casos se crearán dos modelos: el __Modelo 1__ será entrenado con los datos correspondientes a los años 2014 - 2017 y los del año 2018 serán utilizados para su validación. El __Modelo 2__ se construirá utilizando los datos de los años 2014 - 2016 y se validará con los correspondientes al 2017 - 2018.
+
+La medida para evaluar la adecuación de los modelos será el error cuadrático medio en las predicciones tanto para los conjuntos de entrenamiento como para los de validación.
+
+$$MSE = {\sum\limits_{n=1}^{N} (y_i - \hat{y}_i)^2 \over N} = {\sum\limits_{n=1}^{N} e_i^2 \over N}\ $$
+
+Para elegir un modelo óptimo se involucrarán múltiples variables que puedan estar relacionadas a los totales y se elegirá el que más disminuya el MSE para los datos de validación como el óptimo.
+
+Los módelos completos pueden encontrarse en https://github.com/Nef997/Modelos-predictivos-de-accidentalidad-Medellin, en archivos tipo RData que contienen bases de datos con un resumen de los resultados y en su última columna el modelo ajustado. También se encuentran scripts para la realización de predicciones con cada modelo.
+
+\subsection{5.1. Modelos predictivos para Comunas}
+Para estos modelos se decidio ajustar una Regresión Poisson y una regresión Binomial negativa. Se considera que son óptimas porque el número de accidentes es un conteo.
+
+
+```{r, message=FALSE, inclue=F}
+load("./Modelos_finales/com.dia.1_2.RData")
+load("./Modelos_finales/com.sem.1_2.RData")
+load("./Modelos_finales/com.mes.1_2.RData")
+load("./Modelos_finales/bar.dia.1_2.RData")
+load("./Modelos_finales/bar.sem.1_2.RData")
+load("./Modelos_finales/bar.mes.1_2.RData")
+```
+
+
+\subsubsection{5.1.1. Modelo por días}
+
+En base al análisis descriptivo encontramos que el total de accidentes cambia significativamente de un día de la semana a otro (especialmente el domingo). Adicionalmente vimos que los días especiales correspondientes a los días festivos de Colombia (tomados de Calendario Colombia) en los periodos de la base de datos, tenían un nivel de accidentalidad mucho menores a los de un día corriente. Por ende se considera que las variables ‘DIA_NUM’ (1 = Lunes, 2=Martes, ... , 7=Domingo) y ‘especial’ (0 = normal, 1 = festivo).
+Adicionalmente se involucran las variables DIA, MES y AÑO.
+Se consideran las siguientes relaciones:
+
+
+- total~DIA_NUM+DIA+MES+PERIODO+I(PERIODO^2).
+- total ~ DIA_NUM + especial + MES + DIA
+- total ~ DIA_NUM + MES + especial
+- total~DIA_NUM+especial+MES+PERIODO+I(PERIODO^2)
+- total~DIA_NUM+especial+DIA+MES+PERIODO+I(PERIODO^2)
+
+El término cuadrático "I(PERIODO^2)" se añade considerando que la accidentalidad anual ha cambiado de crecimiento a decrecimiento respecto al número de accidentes para algunas comunas.
+
+__Modelo 1:__
+```{r}
+kable(com.dia.1[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(com.dia.2[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(com.dia.1[,1:3], com.dia.2[,2:3])
+colnames(temp) <- c("COMUNA", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+Es apreciable que el modelo 1 obtienes MSE más bajos para todas las predicciones al conjunto de validación y en general también ajusta mejor el conjunto de entrenamiento, salvo algunas comunas específicas.
+\subsubsection{5.1.2. Modelo por semanas}
+
+
+Se consideran relevantes los atributos SEMANA, MES y PERIODO. 
+
+Se construyen los modelos utilizando las siguientes relaciones:
+
+- total~SEMANA+I(PERIODO^2)+MES+PERIODO
+- total~SEMANA+MES 
+- total~SEMANA+MES+PERIODO
+- total~SEMANA+I(PERIODO^2)+PERIODO
+
+__Modelo 1:__
+```{r}
+kable(com.sem.1[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(com.sem.2[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(com.sem.1[,1:3], com.sem.2[,2:3])
+colnames(temp) <- c("COMUNA", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+En general los modelos tipo 1 vuelven a ser mejores para las predicciones de validación, con MSE considerablemente inferiores a los de los modelos tipo 2.
+Sin embargo cabe destacar que a la hora de ajustarse al modelo de entrenamiento se puede apreciar que ambos modelos son muy similares. 
+
+
+
+\subsubsection{5.1.3. Modelo por meses}
+
+Se consideran relevantes los atributosMES y PERIODO.
+
+Se construyen los modelos utilizando las siguientes relaciones:
+
+- total~I(PERIODO^2)+MES+PERIODO
+- total~MES
+- total~MES+PERIODO
+- total~MES+I(MES^2)+PERIODO
+- total~MES+I(MES^2)
+
+
+
+__Modelo 1:__
+```{r}
+kable(com.mes.1[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(com.mes.2[,c(1,4,5)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(com.mes.1[,1:3], com.mes.2[,2:3])
+colnames(temp) <- c("COMUNA", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+En las predicciones a nivel mensual se denota que ambos modelos tienden a ser relativamente igual de acertados con sus predicciones, aunque se denotan MES muy grandes para algunos barrios para conjuntos de validación comparados con los de entrenamiento y visceversa.
+Esto es probablemente debido a la falta de variables disponibles para predecir el número de accidentes mensualmente, contandose solo con MES y PERIODO. 
+Pese a ello el modelo 1 sigue siendo mejor, obteniendo mejores MSE para 10 de las 16 columnas.
+
+\subsection{5.2. Modelos predictivos para Barrios}
+Al agrupar la base de datos por Barrios y las unidades temporales, se encuentra que para algunos barrios existe una sobrepoblación de ceros (no se registraron ocurrencias accidentes en la unidad temporal) para las agrupaciones por semana y por día.
+
+Inicialmente se pensó en ajustar una regresión ZIP (Zero inflated Poisson), pero debido a problemas presentados se tuvo que descartar y se optó por una regresión de la familia Gaussiana.
+En general los barrios con una cantidad pequeña de accidentes ajustan modelos deficientes. Las tablas resumen se presentan solo para los 18 barrios con mayor número de accidentes.
+
+\subsubsection{5.2.1. Modelo por días}
+
+La lógica expuesta para la elección de variables en el modelo por Columnas es similar al de  al modelo para Barrios. Por lo que los atributos elegidos son muy similares:
+
+Se usaron los siguientes atibutos y relaciones:
+
+- total~DIA_NUM+DIA+I(PERIODO^2)+MES+PERIODO
+- total~DIA_NUM+DIA+MES+PERIODO
+- total~DIA_NUM+I(PERIODO^2)+MES+PERIODO
+- total~DIA_NUM+MES+DIA
+- total~DIA_NUM+MES
+
+__Modelo 1:__
+```{r}
+kable(bar.dia.1[bar.dia.1$Barrio %in% unlist(barrios),c(1,4)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(bar.dia.2[bar.dia.2$Barrio %in% unlist(barrios),c(1,4)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(bar.dia.1[bar.dia.1$Barrio %in% unlist(barrios),1:3], bar.dia.2[bar.dia.2$Barrio %in% unlist(barrios),2:3])
+colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+```{r, include=F}
+sum(temp[2])
+sum(temp[3])
+sum(temp[4])
+sum(temp[5])
+sum(bar.dia.1[2])
+sum(bar.dia.1[3])
+sum(bar.dia.2[2])
+sum(bar.dia.2[3])
+
+```
+
+Para los 18 barrios con más datos la suma de los MSE fueron:
+- Modelo 1 fue de 35.68 para entrenamiento y 37.28 para validación, 
+- Modelo 2 fueron 36.08 y 41.32.
+Sin embargo en general la suma de los MSE de entrenamiento son para entrenamiento y validación respectivamente:
+- Modelo 1: 124.2207 y 116.711.
+- Modelo 2: 261.9699 y 133.3192.
+Esto nos dice que el modelo 1 ajusta muy bien para cuando hay una cantidad de accidentalidad considerable, pero para barrios con poca accidentalidad comete sobre estimaciones respecto al modelo 2.
+
+
+\subsubsection{5.2.2. Modelo por semanas}
+
+Se utilizan:
+
+- total~I(PERIODO^2)+MES+PERIODO+SEMANA
+- total~MES+ SEMANA
+- total~MES
+- total~MES+PERIODO+SEMANA
+
+
+__Modelo 1:__
+```{r}
+kable(bar.sem.1[bar.sem.1$Barrio %in% unlist(barrios),c(1,3)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(bar.sem.2[bar.sem.2$Barrio %in% unlist(barrios),c(1,3)])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(bar.sem.1[bar.sem.1$Barrio %in% unlist(barrios),1:3], bar.sem.2[bar.sem.2$Barrio %in% unlist(barrios),2:3])
+colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1", "MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+En este caso se encuentra que la suma de los MSE de entrenamiento y validación son respectivamente para los 18 barrios con mayor accidentalidad son:
+- Modelo 1: 353.4326,334.726. 
+- Modelo 2: 350.6062, 354.8639.
+Usando todos los barrios son mayor accidentalidad son:
+- Modelo 1: 939.4501, 910.3487. 
+- Modelo 2: 793.9533, 856.0634.
+
+Nuevamente esto muestra que el modelo 1 se ajusta mejor siempre que haya un número considerable de accidentes. Mientras que el modelo 2 tiene mejores predicciones en general.
+
+```{r, include=F}
+sum(temp[2])
+sum(temp[3])
+sum(temp[4])
+sum(temp[5])
+sum(bar.sem.1[2])
+sum(bar.sem.1[3])
+sum(bar.sem.2[2])
+sum(bar.sem.2[3])
+
+```
+
+\subsubsection{5.2.3. Modelo por meses}
+formula("total~I(PERIODO^2)+MES+PERIODO"),
+            formula("total~MES"),
+            formula("total~MES+PERIODO")
+Se utilizan:
+
+- total~I(PERIODO^2)+MES+PERIODO
+- total~MES
+- total~MES+PERIODO
+
+
+__Modelo 1:__
+```{r}
+kable(bar.mes.1[bar.mes.1$Barrio %in% unlist(barrios),-5])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Modelo 2:__
+```{r}
+kable(bar.mes.2[bar.mes.2$Barrio %in% unlist(barrios),-5])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+__Tabla comparativa de los MSE__
+```{r}
+temp <- cbind(bar.mes.1[bar.mes.1$Barrio %in% unlist(barrios),1:3], bar.mes.2[bar.mes.2$Barrio %in% unlist(barrios),2:3])
+colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
+kable(temp)%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+En general el modelo 1 presenta mejores estimaciones para los datos de validación, para los 18 barrios con mayor accidentalidad como para el conjuntos global.
+
+- Modelo 1: suma MSE.tr = 4600.85, suma MSE.va = 5915.225. Para los 18 barrios con mayor accidentalidad: MSE.tr = 1672.37, suma MSE.va = 1713.34.
+- Modelo 2: suma MSE.tr = 4255.079, suma MSE.va = 6979.177. Para los 18 barrios con mayor accidentalidad: MSE.tr = 1669.352, suma MSE.va = 2334.426.
+
+Se considera que tanto para barrios como para columnas en el modelo anual, la superioridad muy marcada del modelo 1 para predecir los datos de validación frente al modelo 2, es debida a que posee datos del año previo a sus datos de validación, al solo tener MES y PERIODO involucradas, el peso de esta última variable es mayor en las estimaciones y el modelo entrenado con solo los datos del 2014 al 2016 probablemente falla en notar la relación para los años y fracasa en predecir los datos correspondientes al 2018.
+```{r, include=F}
+sum(temp[2])
+sum(temp[3])
+sum(temp[4])
+sum(temp[5])
+sum(bar.mes.1[2])
+sum(bar.mes.1[3])
+sum(bar.mes.2[2])
+sum(bar.mes.2[3])
+
+```
+\section{6. Agrupamiento}
+Se considera que el tipo de clase "Incendio" es poco relevante para la diferenciación de los grupos dada su baja ocurrencia para todos los barrios y se excluye del análisis.
+Para realizar la agrupación por CLASE de los barrios se decide utilizar el método kmeans.
+
+Se construyen los gráfico wss y silhouette para determinar el número óptimo de clusters a realizar, se obtiene como resultado que para grupos de 2 a 6 existen valores significativos que soportan su escogencia. 
+
+```{r, message=FALSE, include = FALSE}
+library(cluster)    # clustering algorithms
+library(factoextra)
+library(flexclust)
+```
+```{r, message=FALSE, include = FALSE}
+## Preparación de los datos
+cluster_df <- final.df[ ,c(4,8,9,14,15)]
+cluster_df <-  cluster_df%>%
+  group_by(BARRIO,CLASE)%>%
+  summarise(
+    total = n()
+    )
+
+cluster_df <- spread(data = cluster_df, key = CLASE, total)
+cluster_df <- cluster_df%>%
+  mutate_all(~replace(., is.na(.), 0))
+
+cluster_df <- filter(cluster_df, BARRIO!="0" & BARRIO!="Sin Nombre")
+rownames(cluster_df) <- unlist(cluster_df[,1])
+cluster_df[,1] <- NULL
+
+
+```
+```{r}
+fviz_nbclust(cluster_df, kmeans, method = "wss")
+```
+```{r}
+fviz_nbclust(cluster_df, kmeans, method = "silhouette")
+```
+
+Para la consideración del trabajo se decide probar con 3, 4 y 5 clusters para la elección del más óptimo. Tras un análisis se concluyo que el cluster con 3 grupos presentaba diferencias notables entre los grupos pero las desviaciones intragrupos eran muy grandes, especialmetende un grupo donde encasillaba a la mayoria de los barrios. El cluster con 5 se descartó en consideraciión a que no aportaba mucha información adicional respecto al cluster con 4.
+
+```{r}
+cluster3 <- kcca(cluster_df, k = 3,  family=kccaFamily("kmeans"))
+cluster4 <- kcca(cluster_df, k = 4,  family=kccaFamily("kmeans"))
+cluster5 <- kcca(cluster_df, k = 5,  family=kccaFamily("kmeans"))
+```
+
+```{r}
+clust.mat <- matrix(c(cluster3@cluster), ncol=1)
+rownames(clust.mat) <- names(cluster3@cluster)
+clust.mat <- cbind(clust.mat, cluster4@cluster,cluster5@cluster)
+
+colnames(clust.mat) <- lapply(c("C3","C4","C5"),paste,"G", sep="")
+clust.mat <- as.data.frame(clust.mat)
+```
+
+\subsubsection{Medias de los grupos formados:}
+```{r}
+cluster_df$Total <- rowSums(cluster_df[,1:6])
+grouped_df <- merge(cluster_df, clust.mat,by=0,all = T)
+colnames(grouped_df)[1] <- "BARRIO"
+
+
+
+temp <- grouped_df%>%
+  group_by(C4G)%>%
+  summarise(
+    elementos = n(),
+    Atropellos = mean(Atropello),
+    Caidas = mean(`Caída Ocupante`),
+    Choques = mean(Choque),
+    Volcamientos = mean(Volcamiento),
+    Otros = mean(Otro)
+    
+  )
+
+kable(temp[])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+#kable(temp[,c(1,4:7)])%>%
+ # kable_styling("striped", full_width = F,fixed_thead = T)
+```
+
+\subsubsection{Desviaciones estandar:}
+```{r}
+temp <- grouped_df%>%
+  group_by(C4G)%>%
+  summarise(
+    Atropellos = sd(Atropello),
+    Caidas = sd(`Caída Ocupante`),
+    Choques = sd(Choque),
+    Volcamientos = sd(Volcamiento),
+    Otros = sd(Otro)
+  )
+
+kable(temp[])%>%
+  kable_styling("striped", full_width = F,fixed_thead = T)
+#kable(temp[,c(1,4:7)])%>%
+#  kable_styling("striped", full_width = F,fixed_thead = T)
+```
+```{r}
+df.tidy <- grouped_df[,c(-5,-8)]
+df.tidy <- gather(df.tidy, "CLASE", "TOTAL", 2:6)
+attach(df.tidy)
+```
+
+Para el clustering en 4 grupos se tiene la siguiente distribución de datos por grupo: 26% en el grupo 1, 60% en el grupo 2, 9% en el grupo 3 y 5% en el grupo 4. 
+Se nota una intercección entre los cuantiles de todos los grupos en los accidentes por atropello, pero las diferencias entre estas siguen claras en los otros tipos de accidentalidad, en especial en choques donde las diferencias son más marcadas y la desviación estándar es menor. Es notable que el grupo 4 no se sobreponga a otros en los diferentes tipos de accidentalidad, con excepción en atropellos donde su desviación estándar se mantiene más baja.
+Se mantiene una diferencia considerable entre el grupo 4 y los otros grupos. Cabe notar que los grupos 1 y 3 suelen interceptarse sobre todos los tipos de accidentalidad excepto en choques donde todos los grupos son significativamente diferentes los unos de los otros. La principal diferencia entre los grupos yace en la media de la cantidad de accidentes que tienen, siendo el primer grupo donde menos accidentes se tienen y el 4 grupo donde los accidentes son mayores.
+
+```{r}
+clases <- unique(CLASE)
+
+a <- ggplot(df.tidy[CLASE == clases[1],], aes(x=as.character(C4G), y=TOTAL))+
+    geom_boxplot(notch=F)+
+    labs( x = "Grupo", y = clases[1])
+b <- ggplot(df.tidy[CLASE == clases[2],], aes(x=as.character(C4G), y=TOTAL, ))+
+    geom_boxplot(notch=F)+
+    labs( x = "Grupo", y = clases[2])
+c <- ggplot(df.tidy[CLASE == clases[3],], aes(x=as.character(C4G), y=TOTAL))+
+    geom_boxplot(notch=F)+
+    labs( x = "Grupo", y = clases[3])
+d <- ggplot(df.tidy[CLASE == clases[4],], aes(x=as.character(C4G), y=TOTAL))+
+    geom_boxplot(notch=F)+
+    labs(x = "Grupo", y = clases[4])
+e <- ggplot(df.tidy[CLASE == clases[5],], aes(x=as.character(C4G), y=TOTAL))+
+    geom_boxplot(notch=F)+
+    labs( x = "Grupo", y = clases[5])
+grid.arrange(a, b,c,d,e, ncol=3, top="Boxplots para los grupos")
+ 
+```
+Los barrios pertenecientes al tercer grupo son los que tienen los mayores niveles de accidentalidad para cada uno de los tipos. Especialmente son aquellos con una marcada superioridad en la cantidad de accidentes por choques.
+Los grupos 1 y 2 tienen barrios similares para accidentes de clase "Otro", "Caída ocupante" y "Atrpello", pero se diferencian notablemente en su cantidad de volcamientos y choques. Además los barrios del grupo 2 podrían considerarse de baja accidentalidad.
+El grupo 4 correspondería a un grupo intermedio entre 2 y 3 respecto a la cantidad de choques, con un número de elementos algo bajo su dispersión es pequeña.
+
+\section{7. Conclusiones}
+
+- Los modelos ajustados logran la predicción de la accidentalidad, con errores relativamente bajos especialmente para comunas.
+- Se presentan estrategias concretas de mejora basadas en la literatura al momento de la realización del mismo
+- Los modelos predictivos que utilizan el ~80% de los datos tienden a ser superiores a los modelos que utilizan tan solo un ~60% de los datos disponibles, especialmente cuando se enfrentan a datos desconocidos (predicen mucho mejor los datos de validación), como se vio en el ajuste de los modelos predictivos de la sección 5.
+- La extrapolación para la predicción de accidentalidad anualmente disminuye la precisión de los modelos.
+
+\section{8. Recomendaciones}
+
+- Un gran problema a la hora de predecir la accidentalidad es la falta de datos concretos a cada tipo de accidente particular; estudios han demostrado que la velocidad límite de la vía en donde ocurre el accidente es un buen factor de predicción de la letalidad en accidentes de peatones (Nishimoto, Kubota & Ponte, 2019), lo que nos lleva de nuevo al problema de falta de datos de características propias de la locación concreta del accidente, como una cuantificación del número de intersecciones o vías con alta velocidad.
+
+- Se propone hacer modelos a menor escala de localidad (calles, intersecciones, avenidas), esto podría mejor la identificación de factores únicos relacionados con la accidentalidad y mejorar los modelos (Zhang &  Shi 2019).
+
+\section{9. Bibliografía}
+
+- Barajas, F., Torres, M., Arteaga, L., & Castro, C. (2015). GAMLSS models applied in the treatment of agro-industrial waste. Comunicaciones En Estadística, 8(2), 245. doi: 10.15332/s2027-3355.2015.0002.07
+- Espinosa López, A., Cabrera Arana, G., & Velásquez Osorio, N. (2017). Epidemiología de incidentes viales Medellín-Colombia, 2010-2015. Revista Facultad Nacional De Salud Pública, 35(1), 7-15. doi: 10.17533/udea.rfnsp.v35n1a02
+- Hyder, A., & Vecino-Ortiz, A. (2014). BRICS: opportunities to improve road safety. Bulletin Of The World Health Organization, 92(6), 423-428. doi: 10.2471/blt.13.132613
+- Erdogan, S., Yilmaz, I., Baybura, T., & Gullu, M. (2008). Geographical information systems aided traffic accident analysis system case study: city of Afyonkarahisar. Accident Analysis & Prevention, 40(1), 174-181. doi: 10.1016/j.aap.2007.05.004
+- OpenData Alcaldía de Medellín. (2019). Retrieved from https://geomedellin-m-medellin.opendata.arcgis.com/search?tags=movilidad
+- Zhang, J., & Shi, T. (2019). Spatial analysis of traffic accidents based on WaveCluster and vehicle communication system data. Eurasip Journal on Wireless Communications and Networking, 2019(1) doi:10.1186/s13638-019-1450-0
+- Nishimoto, T., Kubota, K., & Ponte, G. (2019). A pedestrian serious injury risk prediction method based on posted speed limit. Accident Analysis & Prevention, 129, 84-93. doi: 10.1016/j.aap.2019.04.021
+- Lehmann, E. L.; Casella, George (1998). Theory of Point Estimation (2nd ed.). New York: Springer
+- Rigby R.A. and Stasinopoulos D.M. (2005). Generalized additive models for location, scale and shape,(with discussion), Appl. Statist., 54, part 3, pp 507-554.
+- Maechler, M.., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2019). cluster: Cluster Analysis Basics and Extensions. R package version 2.1.0.
+- Mundt, F., Kassambara, A. (2017). factoextra: Extract and Visualize the Results of Multivariate Data Analyses (1.0.5). 
+- Friedrich, L., A (2006.). Toolbox for K-Centroids Cluster Analysis. Computational Statistics and Data Analysis, 51 (2), 526-544.
+
+
+

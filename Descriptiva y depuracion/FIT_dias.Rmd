@@ -1,0 +1,150 @@
+---
+title: "Fitting"
+author: "J_Munera"
+date: "6/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##MODELO DE PREDICCION PARA DIAS:
+
+```{r}
+library(dplyr)
+dias.especiales <-  read.csv("dias_espe_predic.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+
+dias.especiales <- dias.especiales%>%
+  mutate(
+    FECHA = as.Date(paste(PERIODO,MES,DIA,sep="-"))
+  )
+```
+
+## GENERACION DE TUPLAS PARA BARRIOS
+```{r}
+date_filler_bar <- function(barrio, inicio, fin){
+  
+  dates <- data.frame(FECHA=seq(as.Date(inicio),as.Date(fin),by = "day"))
+  #return(dates)
+  dates <- dates%>% mutate(
+    BARRIO = barrio,
+    PERIODO = as.numeric(format(FECHA ,"%Y")),
+    MES = as.factor(as.numeric((format(FECHA ,"%m")))),
+    DIA = as.numeric(format(FECHA ,"%d")),
+    DIA_NUM = as.factor(ifelse(as.POSIXlt(FECHA)$wday==0, 7, as.POSIXlt(FECHA)$wday)),
+    especial = as.factor(ifelse(FECHA %in% dias.especiales$FECHA, 1, 0))
+  )
+  return(dates) 
+}
+#s <- date_filler_bar("La Candelaria", '2019-12-01', '2020-02-24')
+
+```
+
+## GENERACION DE TUPLAS PARA COMUNAS
+```{r}
+date_filler_com <- function(comuna, inicio, fin){
+  
+  dates <- data.frame(FECHA=seq(as.Date(inicio),as.Date(fin),by = "day"))
+  
+  dates <- dates%>% mutate(
+    COMUNA = comuna,
+    PERIODO = as.numeric(format(FECHA ,"%Y")),
+    MES = as.factor(as.numeric(format(FECHA ,"%m"))),
+    DIA = as.numeric(format(FECHA ,"%d")),
+    DIA_NUM = as.factor(ifelse(as.POSIXlt(FECHA)$wday==0, 7, as.POSIXlt(FECHA)$wday)),
+    especial = ifelse(FECHA %in% dias.especiales$FECHA, 1, 0)
+  )
+  return(dates)
+   
+}
+
+
+```
+
+
+##CARGA BASES DE DATOS DEL ENTRENAMIENTO Y LOS MODELOS
+```{r}
+#df.barrio <- read.csv("barrios_dia_esp.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+
+df.comuna <- read.csv("comunas_dias_esp.csv", stringsAsFactors = FALSE, encoding = "ISO_8859-1", header = T)
+
+#df.barrio <- df.barrio[,c(-1,-10)] 
+df.comuna<-df.comuna[,c(-1,-10)] 
+
+library(magrittr)
+library(tidyr)
+df.comuna %<>% mutate(DIA_NUM = as.factor(DIA_NUM))
+df.comuna %<>% mutate(MES = as.factor(MES))
+df.comuna %<>% mutate(especial = as.factor(especial))
+#df.barrio %<>% mutate(DIA_NUM = as.factor(DIA_NUM))
+#df.barrio %<>% mutate(MES = as.factor(MES))
+#df.barrio %<>% mutate(especial = as.factor(especial))
+
+#df.barrio <- df.barrio %>%
+#  mutate(
+#    MES = as.factor(format(as.Date(FECHA) ,"%m")),
+#  )
+
+load("./Modelos_finales/com.dia.1_2.RData") ## carga los modelos de comunas
+load("./Modelos_finales/bar.dia.1_2.RData")
+```
+
+
+```{r}
+#load("./Modelos_finales/com.dia.1_2.RData") ## carga los modelos
+
+predicciones_dias <- function(com.or.bar, inicio, final, nombre){
+  #com.or.bar: T = com; F = bar
+  #inicio: fecha de inicio
+  #final: fecha de finalizacion
+  #nombre: nombre de la comuna o del barrio
+  if(com.or.bar){
+    datos <- date_filler_com(nombre, inicio, final) #datos a predecir
+    modelo1 <- filter(com.dia.1, Comuna== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(com.dia.2, Comuna== nombre)$Reg.obj[[1]]
+    tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
+    #tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
+  
+    y1 <- predict(modelo1, newdata = datos, data= tr1)
+    #y2 <- predict(modelo2, newdata = datos, data= tr2)    
+  }else{
+    #TODO VERIFICAR
+    datos <- date_filler_bar(nombre, inicio, final)
+    modelo1 <- filter(bar.dia.1, Barrio== nombre)$Reg.obj[[1]]
+    #modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
+    #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
+    #tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
+    
+    y1 <- predict(modelo1, newdata = datos)
+    #y2 <- predict(modelo2, newdata = datos)
+    y1[y1<0] <- 0
+    #y2[y2<0] <- 0
+  }
+  #return(tr2)
+  
+  total <- sum(y1)
+  df <- cbind(datos[1], y1)
+  
+  p<-ggplot(data = df, aes(y= y1, x = as.Date(FECHA)))+
+     geom_line(color = "#00AFBB", size= 1)+
+  theme(legend.position="top")+
+  theme_bw()+
+  labs(title=paste("Accidentalidad en", nombre),
+        x ="Fecha", y = "Número de accidentes")
+  
+  output <- list(df, round(total), p)
+  names(output) <- c("Datos", "total accidentes", "grafico")
+  return(output)
+  
+  
+}
+library(ggplot2)
+##EJEMPLO:
+prediccion <- predicciones_dias(T, '2019-12-01', '2020-01-06', "La Candelaria")
+print(prediccion$grafico)
+#prediccion <- predicciones_dias(F, '2019-06-23', '2019-08-24', "Aldea Pablo VI")
+
+
+
+```
