@@ -102,24 +102,24 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
   if(com.or.bar){
     datos <- date_filler_com(nombre, inicio, final) #datos a predecir
     modelo1 <- filter(com.dia.1, Comuna== nombre)$Reg.obj[[1]]
-    #modelo2 <- filter(com.dia.2, Comuna== nombre)$Reg.obj[[1]]
+    modelo2 <- filter(com.dia.2, Comuna== nombre)$Reg.obj[[1]]
     tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    #tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
+    tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
   
     y1 <- predict(modelo1, newdata = datos, data= tr1)
-    #y2 <- predict(modelo2, newdata = datos, data= tr2)    
+    y2 <- predict(modelo2, newdata = datos, data= tr2)    
   }else{
-    #TODO VERIFICAR
+    
     datos <- date_filler_bar(nombre, inicio, final)
     modelo1 <- filter(bar.dia.1, Barrio== nombre)$Reg.obj[[1]]
-    #modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
+    modelo2 <- filter(bar.dia.2, Barrio== nombre)$Reg.obj[[1]]
     #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
     #tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
     
     y1 <- predict(modelo1, newdata = datos)
-    #y2 <- predict(modelo2, newdata = datos)
+    y2 <- predict(modelo2, newdata = datos)
     y1[y1<0] <- 0
-    #y2[y2<0] <- 0
+    y2[y2<0] <- 0
   }
   #return(tr2)
   
@@ -133,17 +133,28 @@ predicciones_dias <- function(com.or.bar, inicio, final, nombre){
   labs(title=paste("Accidentalidad en", nombre),
         x ="Fecha", y = "Número de accidentes")
   
-  output <- list(df, round(total), p)
-  names(output) <- c("Datos", "total accidentes", "grafico")
+  total2 <- sum(y2)
+  df2 <- cbind(datos[1], y2)
+  
+  p2<-ggplot(data = df2, aes(y= y2, x = as.Date(FECHA)))+
+     geom_line(color = "#00AFBB", size= 1)+
+  theme(legend.position="top")+
+  theme_bw()+
+  labs(title=paste("Accidentalidad en", nombre),
+        x ="Fecha", y = "Número de accidentes")
+  
+  output <- list(df, round(total), p, df2, round(total2), p2)
+  names(output) <- c("Datos.Mod1", "total accidentes 1", "grafico.1", "Datos.Mod2", "total accidentes 2", "grafico.2")
   return(output)
   
   
 }
 library(ggplot2)
 ##EJEMPLO:
-prediccion <- predicciones_dias(T, '2019-12-01', '2020-01-06', "La Candelaria")
-print(prediccion$grafico)
-#prediccion <- predicciones_dias(F, '2019-06-23', '2019-08-24', "Aldea Pablo VI")
+#prediccion <- predicciones_dias(T, '2019-12-01', '2020-01-06', "La Candelaria")
+prediccion <- predicciones_dias(F, '2019-06-23', '2019-08-24', "Aldea Pablo VI")
+print(prediccion$grafico.1)
+
 
 
 

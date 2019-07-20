@@ -84,30 +84,33 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
   if(com.or.bar){
     datos <- date_filler_com(nombre, inicio, final) #datos a predecir
     modelo1 <- filter(com.mes.1, Comuna== nombre)$Reg.obj[[1]]
-    #modelo2 <- filter(com.mes.2, Comuna== nombre)$Reg.obj[[1]]
+    modelo2 <- filter(com.mes.2, Comuna== nombre)$Reg.obj[[1]]
     tr1 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
-    #tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
+    tr2 <- filter(df.comuna, COMUNA==nombre, PERIODO !=2018 & PERIODO !=2017)
     
     y1 <- predict(modelo1, newdata = datos[,-4], data= tr1)
-    #y2 <- predict(modelo2, newdata = datos, data= tr2)
+    y2 <- predict(modelo2, newdata = datos[,-4], data= tr2)
     
   }else{
     #TODO VERIFICAR
     datos <- date_filler_bar(nombre, inicio, final)
     
     modelo1 <- filter(bar.mes.1, Barrio== nombre)$Reg.obj[[1]]
-    #modelo2 <- filter(bar.mes.2, Barrio== nombre)$Reg.obj[[1]]
+    modelo2 <- filter(bar.mes.2, Barrio== nombre)$Reg.obj[[1]]
     
     #tr1 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018)#datos de entrenamietno del modelo
     #tr2 <- filter(df.barrio, BARRIO==nombre, PERIODO !=2018 & PERIODO !=2017)
     
     y1 <- predict(modelo1, newdata = datos[,-4])
-    #y2 <- predict(modelo2, newdata = datos)
+    y2 <- predict(modelo2, newdata = datos)
   }
   
   
   total <- sum(y1)
   df <- cbind(datos, y1)
+  
+  total2 <- sum(y2)
+  df2 <- cbind(datos, y2)
   
   p<-ggplot(data = df, aes(y= y1, x = as.Date(Fecha), col=as.factor(PERIODO)))+ geom_point()+
      geom_line()+
@@ -117,8 +120,16 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
   labs(title=paste("Accidentalidad en", nombre),
         x ="Mes", y = "Número de accidentes", col="Periodo")
   
-  output <- list(df, round(total), p)
-  names(output) <- c("Datos", "total accidentes", "grafico")
+  p2<-ggplot(data = df2, aes(y= y2, x = as.Date(Fecha), col=as.factor(PERIODO)))+ geom_point()+
+     geom_line()+
+  theme(legend.position="top")+
+  theme_bw()+
+    scale_x_date(date_labels = "%U")+
+  labs(title=paste("Accidentalidad en", nombre),
+        x ="Mes", y = "Número de accidentes", col="Periodo")
+  
+  output <- list(df, round(total), p, df2, round(total2), p2)
+  names(output) <- c("Datos.Mod1", "total accidentes 1", "grafico.1", "Datos.Mod2", "total accidentes 2", "grafico.2")
   return(output)
   
   
@@ -128,5 +139,5 @@ predicciones_meses <- function(com.or.bar, inicio, final, nombre){
 ##para barrio
 #prediccion <- predicciones_meses(F, c(2019, 5), c(2019,10), "Aldea Pablo VI")
 prediccion <- predicciones_meses(T, c(2018, 5), c(2019,10), "La Candelaria")
-print(prediccion$grafico)
+print(prediccion$grafico.2)
 ```
