@@ -394,6 +394,8 @@ kable(table.temp)%>%
 
 ```
 
+
+\newpage
 \section{5. Modelos predictivos }
 Como notamos en el análisis descriptivo existe una variabilidad notable a nivel de accidentalidad para cada columna y para cada barrio. Por ello se considera que crear un modelo predictivo específico para cada columna/barrio proveerá las mejores estimaciones de accidentalidad.
 
@@ -405,13 +407,19 @@ La medida para evaluar la adecuación de los modelos será el error cuadrático 
 
 $$MSE = {\sum\limits_{n=1}^{N} (y_i - \hat{y}_i)^2 \over N} = {\sum\limits_{n=1}^{N} e_i^2 \over N}\ $$
 
-Para elegir un modelo óptimo se involucrarán múltiples variables que puedan estar relacionadas a los totales y se elegirá el que más disminuya el MSE para los datos de validación como el óptimo.
+
+
+\textcolor{blue}{Para elegir un modelo óptimo se involucrarán múltiples formulas con diferentes variables que puedan estar relacionadas a la accidentalidad y se elegirá la formula que mejor disminuya el MSE para los datos de validación como la óptima para el modelo.}
+
+\textcolor{blue}{En este reporte se mostraran los resultados de los MSE para los datos de entrenamiento y validación y la formula del modelo final siempre que sea posible, ya que en ciertos modelos al considerarse variables cualitativas, el número de parámetros impide su escritura. Este es el caso de los modelos por días y los modelos por semanas.}
 
 Los módelos completos pueden encontrarse en https://github.com/Nef997/Modelos-predictivos-de-accidentalidad-Medellin, en archivos tipo RData que contienen bases de datos con un resumen de los resultados y en su última columna el modelo ajustado. También se encuentran scripts para la realización de predicciones con cada modelo.
 
 \subsection{5.1. Modelos predictivos para Comunas}
-Para estos modelos se decidio ajustar una Regresión Poisson y una regresión Binomial negativa. Se considera que son óptimas porque el número de accidentes es un conteo.
+Para estos modelos se decidio ajustar una Regresión Poisson y una regresión Binomial negativa. Se considera que son óptimas porque el número de accidentes es un conteo y la cantidad de accidentes en las Comunas siempre es un numero positivo independiente de la escala de tiempo.
 
+\textcolor{blue}{En los resultados se muestran tres tablas para cada modelo. Las dos primeras correspondientes al modelo 1 y al modelo 2 con tres columnas: 'Comuna' el nombre de la comuna, 'Family' el tipo de regresión ajustada (binomial negativa o poisson) y 'Formula' equivalente al parámetro \textit{formula} ingresado a la función \textit{gamlss} para crear el modelo final en los modelos por dia y semana mientras que en el modelo por año se muestra la ecuación final de la regresión.
+La tercera tabla incluye los resultados de los MSE para los datos de validación y entrenamiento de cada modelo.}
 
 ```{r, message=FALSE, inclue=F}
 load("./Modelos_finales/com.dia.1_2.RData")
@@ -427,8 +435,8 @@ load("./Modelos_finales/bar.mes.1_2.RData")
 
 En base al análisis descriptivo encontramos que el total de accidentes cambia significativamente de un día de la semana a otro (especialmente el domingo). Adicionalmente vimos que los días especiales correspondientes a los días festivos de Colombia (tomados de Calendario Colombia) en los periodos de la base de datos, tenían un nivel de accidentalidad mucho menores a los de un día corriente. Por ende se considera que las variables ‘DIA_NUM’ (1 = Lunes, 2=Martes, ... , 7=Domingo) y ‘especial’ (0 = normal, 1 = festivo).
 Adicionalmente se involucran las variables DIA, MES y AÑO.
-Se consideran las siguientes relaciones:
 
+Para la construcción de los modelos se consideran las siguientes relaciones:
 
 - total~DIA_NUM+DIA+MES+PERIODO+I(PERIODO^2).
 - total ~ DIA_NUM + especial + MES + DIA
@@ -438,11 +446,14 @@ Se consideran las siguientes relaciones:
 
 El término cuadrático "I(PERIODO^2)" se añade considerando que la accidentalidad anual ha cambiado de crecimiento a decrecimiento respecto al número de accidentes para algunas comunas.
 
+\textcolor{blue}{Se construyen los modelos usando a MES como una variable cualitativa, debido a que al considerarla númerica y al considerar distintos tipos de relaciones con la variable respuesta: lineal,con termino cuadrático, termino cúbico y usando splines con hasta 4 nodos se obtenian por norma general errores mayores que al considerar la variable cualitativa.}
+
 __Modelo 1:__
 ```{r}
 kable(com.dia.1[,c(1,4,5)])%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
+
 
 __Modelo 2:__
 ```{r}
@@ -459,8 +470,10 @@ kable(temp)%>%
 ```
 
 Es apreciable que el modelo 1 obtienes MSE más bajos para todas las predicciones al conjunto de validación y en general también ajusta mejor el conjunto de entrenamiento, salvo algunas comunas específicas.
-\subsubsection{5.1.2. Modelo por semanas}
 
+
+
+\subsubsection{5.1.2. Modelo por semanas}
 
 Se consideran relevantes los atributos SEMANA, MES y PERIODO. 
 
@@ -470,6 +483,8 @@ Se construyen los modelos utilizando las siguientes relaciones:
 - total~SEMANA+MES 
 - total~SEMANA+MES+PERIODO
 - total~SEMANA+I(PERIODO^2)+PERIODO
+
+\textcolor{blue}{SEMANA es considerado como un atributo cualitativo. Al considerarlo númerico los MSE de validación siempre fueron superiores independiente de si se consideraba una relación lineal, cuadrática, cúbica o con splineas de hasta 6 nodos. Esto es equivalente para el modelo por semanas de Barrios.}
 
 __Modelo 1:__
 ```{r}
@@ -508,17 +523,41 @@ Se construyen los modelos utilizando las siguientes relaciones:
 - total~MES+I(MES^2)
 
 
+```{r}
+write.formulas <- function(coefs){
+  param <- names(coefs)
+  form <- paste(unlist(paste(round(coefs,2), param,sep= "*")), collapse= "+")
+
+  form <- gsub("\\*\\(Intercept\\)", "", form)
+  #return(form)
+  form <- gsub("\\+\\-", "-", form)
+  form <- gsub("I\\(", "(", form)
+  return(paste("total",form, sep=" = "))
+}
+
+```
 
 __Modelo 1:__
 ```{r}
-kable(com.mes.1[,c(1,4,5)])%>%
+modelos_temp <- com.mes.1$Reg.obj
+formulas <- lapply(modelos_temp, function(x) write.formulas(coef(x)))
+temp <- com.mes.1[,c(1,4)]
+temp$Formula <- formulas
+kable(temp)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
+
+
 ```
 
 __Modelo 2:__
 ```{r}
-kable(com.mes.2[,c(1,4,5)])%>%
+modelos_temp <- com.mes.2$Reg.obj
+formulas <- lapply(modelos_temp, function(x) write.formulas(coef(x)))
+temp <- com.mes.2[,c(1,4)]
+temp$Formula <- formulas
+kable(temp)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
+
 ```
 
 __Tabla comparativa de los MSE__
@@ -537,7 +576,10 @@ Pese a ello el modelo 1 sigue siendo mejor, obteniendo mejores MSE para 10 de la
 Al agrupar la base de datos por Barrios y las unidades temporales, se encuentra que para algunos barrios existe una sobrepoblación de ceros (no se registraron ocurrencias accidentes en la unidad temporal) para las agrupaciones por semana y por día.
 
 Inicialmente se pensó en ajustar una regresión ZIP (Zero inflated Poisson), pero debido a problemas presentados se tuvo que descartar y se optó por una regresión de la familia Gaussiana.
-En general los barrios con una cantidad pequeña de accidentes ajustan modelos deficientes. Las tablas resumen se presentan solo para los 18 barrios con mayor número de accidentes.
+En general los barrios con una cantidad pequeña de accidentes ajustan modelos deficientes lo que los hace poco fiables. Las tablas resumen se presentan solo para los 40 barrios con mayor número de accidentes.
+
+\textcolor{blue}{Las tablas mostradas en los resultados de barrios son analogas a las mostradas para las Comunas. Nuevamente solo se muestra la formula con el modelo final obtenido para el modelo de años.}
+
 
 \subsubsection{5.2.1. Modelo por días}
 
@@ -553,41 +595,61 @@ Se usaron los siguientes atibutos y relaciones:
 
 __Modelo 1:__
 ```{r}
-kable(bar.dia.1[bar.dia.1$Barrio %in% unlist(barrios),c(1,4)])%>%
+table.temp <- final.df%>%
+  group_by(BARRIO)%>%
+  summarise(
+    Numero.Accidentes = n(),
+  )
+barrios <- (table.temp[order(table.temp$Numero.Accidentes, decreasing = T),1])[1:40,]
+
+temp <- bar.dia.1[match(unlist(barrios), bar.dia.1$Barrio),c(1,4)]
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
 
 __Modelo 2:__
 ```{r}
-kable(bar.dia.2[bar.dia.2$Barrio %in% unlist(barrios),c(1,4)])%>%
+temp <- bar.dia.2[match(unlist(barrios), bar.dia.2$Barrio),c(1,4)]
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
+
 ```
 
 __Tabla comparativa de los MSE__
 ```{r}
-temp <- cbind(bar.dia.1[bar.dia.1$Barrio %in% unlist(barrios),1:3], bar.dia.2[bar.dia.2$Barrio %in% unlist(barrios),2:3])
-colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
-kable(temp)%>%
+temp <- cbind(bar.dia.1[match(unlist(barrios), bar.dia.1$Barrio),1:3], bar.dia.2[match(unlist(barrios), bar.dia.2$Barrio),2:3])
+
+row.names(temp) <- NULL
+colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2")
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
 ```{r, include=F}
-sum(temp[2])
-sum(temp[3])
-sum(temp[4])
-sum(temp[5])
-sum(bar.dia.1[2])
-sum(bar.dia.1[3])
-sum(bar.dia.2[2])
-sum(bar.dia.2[3])
+sum(temp[2])/40
+sum(temp[3])/40
+sum(temp[4])/40
+sum(temp[5])/40
+sum(bar.dia.1[2])/dim((bar.dia.1[2]))[1]
+sum(bar.dia.1[3])/dim((bar.dia.1[3]))[1]
+sum(bar.dia.2[2])/dim((bar.dia.2[2]))[1]
+sum(bar.dia.2[3])/dim((bar.dia.2[3]))[1]
 
 ```
 
-Para los 18 barrios con más datos la suma de los MSE fueron:
-- Modelo 1 fue de 35.68 para entrenamiento y 37.28 para validación, 
-- Modelo 2 fueron 36.08 y 41.32.
-Sin embargo en general la suma de los MSE de entrenamiento son para entrenamiento y validación respectivamente:
-- Modelo 1: 124.2207 y 116.711.
-- Modelo 2: 261.9699 y 133.3192.
+Para los 18 barrios con más datos la media de los MSE son:
+
+- Modelo 1 fue de 1.4429 para entrenamiento y 1.5810 para validación, 
+- Modelo 2 fueron 1.4336 y 1.6287.
+
+Sin embargo, la media para entrenamiento y validación usando todos los datos son respectivamente:
+
+- Modelo 1:  0.4652 y 0.9811.
+- Modelo 2: 0.4387 y 0.5012.
+
 Esto nos dice que el modelo 1 ajusta muy bien para cuando hay una cantidad de accidentalidad considerable, pero para barrios con poca accidentalidad comete sobre estimaciones respecto al modelo 2.
 
 
@@ -603,31 +665,43 @@ Se utilizan:
 
 __Modelo 1:__
 ```{r}
-kable(bar.sem.1[bar.sem.1$Barrio %in% unlist(barrios),c(1,3)])%>%
+
+temp <- bar.sem.1[match(unlist(barrios), bar.sem.1$Barrio),c(1,4)]
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
 
 __Modelo 2:__
 ```{r}
-kable(bar.sem.2[bar.sem.2$Barrio %in% unlist(barrios),c(1,3)])%>%
+
+temp <- bar.sem.2[match(unlist(barrios), bar.sem.2$Barrio),c(1,4)]
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
 
 __Tabla comparativa de los MSE__
 ```{r}
-temp <- cbind(bar.sem.1[bar.sem.1$Barrio %in% unlist(barrios),1:3], bar.sem.2[bar.sem.2$Barrio %in% unlist(barrios),2:3])
+temp <- cbind( bar.sem.1[match(unlist(barrios), bar.sem.1$Barrio),1:3],  bar.sem.2[match(unlist(barrios), bar.sem.2$Barrio),2:3])
+row.names(temp) <- NULL
 colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1", "MSE.tr Modelo 2", "MSE.va Modelo 2" )
-kable(temp)%>%
+kable(temp, booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
-En este caso se encuentra que la suma de los MSE de entrenamiento y validación son respectivamente para los 18 barrios con mayor accidentalidad son:
-- Modelo 1: 353.4326,334.726. 
-- Modelo 2: 350.6062, 354.8639.
-Usando todos los barrios son mayor accidentalidad son:
-- Modelo 1: 939.4501, 910.3487. 
-- Modelo 2: 793.9533, 856.0634.
+En este caso se encuentra que la media de los MSE de entrenamiento y validación son respectivamente para los 40 barrios con mayor accidentalidad son:
 
-Nuevamente esto muestra que el modelo 1 se ajusta mejor siempre que haya un número considerable de accidentes. Mientras que el modelo 2 tiene mejores predicciones en general.
+- Modelo 1: 13.0316 y 13.0513. 
+- Modelo 2: 12.3487 y 12.9821.
+
+Usando todos los barrios:
+
+- Modelo 1: 3.5185, 3.4095. 
+- Modelo 2: 2.9847, 3.2182.
+
+Esto muestra que el modelo1 y el modelo2 tienen errores muy similares cuando la cantidad de accidentes es alta en los barrios. Sin embargo el modelo 2 tiene mejores predicciones en general.
 
 ```{r, include=F}
 sum(temp[2])
@@ -642,9 +716,7 @@ sum(bar.sem.2[3])
 ```
 
 \subsubsection{5.2.3. Modelo por meses}
-formula("total~I(PERIODO^2)+MES+PERIODO"),
-            formula("total~MES"),
-            formula("total~MES+PERIODO")
+
 Se utilizan:
 
 - total~I(PERIODO^2)+MES+PERIODO
@@ -654,39 +726,82 @@ Se utilizan:
 
 __Modelo 1:__
 ```{r}
-kable(bar.mes.1[bar.mes.1$Barrio %in% unlist(barrios),-5])%>%
+modelos_temp <- bar.mes.1$Reg.obj
+formulas <- lapply(modelos_temp, function(x) write.formulas(coef(x)))
+temp <- data.frame(Barrio=bar.mes.1[,1])
+temp$Formula <- formulas
+
+temp <- temp[match(unlist(barrios), temp$Barrio),]
+
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
+
+
+
 ```
 
 __Modelo 2:__
 ```{r}
-kable(bar.mes.2[bar.mes.2$Barrio %in% unlist(barrios),-5])%>%
+
+
+modelos_temp <- bar.mes.2$Reg.obj
+formulas <- lapply(modelos_temp, function(x) write.formulas(coef(x)))
+temp <- data.frame(Barrio=bar.mes.2[,1])
+
+temp$Formula <- formulas
+
+temp <- temp[match(unlist(barrios), temp$Barrio),]
+
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
+
+
 ```
 
 __Tabla comparativa de los MSE__
 ```{r}
-temp <- cbind(bar.mes.1[bar.mes.1$Barrio %in% unlist(barrios),1:3], bar.mes.2[bar.mes.2$Barrio %in% unlist(barrios),2:3])
+temp1 <- bar.mes.1[,1:3]
+temp1 <- temp1[match(unlist(barrios), temp1$Barrio),]
+
+temp2 <- bar.mes.2[,1:3]
+temp2 <- temp2[match(unlist(barrios), temp2$Barrio),]
+
+temp <- cbind(temp1, temp2[,-1])
 colnames(temp) <- c("BARRIO", "MSE.tr Modelo 1", "MSE.va Modelo 1","MSE.tr Modelo 2", "MSE.va Modelo 2" )
-kable(temp)%>%
+
+row.names(temp) <- NULL
+
+kable(temp,"latex", booktabs = TRUE, longtable = TRUE)%>%
   kable_styling("striped", full_width = F,fixed_thead = T)
 ```
 
-En general el modelo 1 presenta mejores estimaciones para los datos de validación, para los 18 barrios con mayor accidentalidad como para el conjuntos global.
 
-- Modelo 1: suma MSE.tr = 4600.85, suma MSE.va = 5915.225. Para los 18 barrios con mayor accidentalidad: MSE.tr = 1672.37, suma MSE.va = 1713.34.
-- Modelo 2: suma MSE.tr = 4255.079, suma MSE.va = 6979.177. Para los 18 barrios con mayor accidentalidad: MSE.tr = 1669.352, suma MSE.va = 2334.426.
+En este caso para los 40 barrios con mayor accidentalidad se encuentra que la media de los MSE de entrenamiento y validación son respectivamente:
+
+- Modelo 1: media MSE.tr = 64.6116, media MSE.va = 67.3544.  
+- Modelo2: media MSE.tr = 59.4963, media MSE.va = 105.9345.
+
+Usando todos los barrios:
+
+- Modelo 1: media MSE.tr = 17.1035, media MSE.va = 21.98968.  
+- Modelo2: media MSE.tr = 16.0569, media MSE.va = 26.3365.
+
+Se puede apreciar que el modelo1 es mejor prediciendo la accidentalidad de los barrios, independiente de la cantidad de accidentes de estos.
 
 Se considera que tanto para barrios como para columnas en el modelo anual, la superioridad muy marcada del modelo 1 para predecir los datos de validación frente al modelo 2, es debida a que posee datos del año previo a sus datos de validación, al solo tener MES y PERIODO involucradas, el peso de esta última variable es mayor en las estimaciones y el modelo entrenado con solo los datos del 2014 al 2016 probablemente falla en notar la relación para los años y fracasa en predecir los datos correspondientes al 2018.
 ```{r, include=F}
-sum(temp[2])
-sum(temp[3])
-sum(temp[4])
-sum(temp[5])
-sum(bar.mes.1[2])
-sum(bar.mes.1[3])
-sum(bar.mes.2[2])
-sum(bar.mes.2[3])
+mean(temp[,2])
+mean(temp[,3])
+mean(temp[,4])
+mean(temp[,5])
+mean(bar.mes.1[,2])
+mean(bar.mes.1[,3])
+mean(bar.mes.2[,2])
+mean(bar.mes.2[,3])
 
 ```
 \section{6. Agrupamiento}

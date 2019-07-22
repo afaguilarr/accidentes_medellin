@@ -34,7 +34,7 @@ df$SEMANA<- as.numeric(strftime(df$FECHA,"%V"))
 ```{r}
 library(magrittr)
 #df %<>% mutate(MES = as.factor(MES))
-df %<>% mutate(SEMANA = as.factor(SEMANA))
+#df %<>% mutate(SEMANA = as.factor(SEMANA))
 ```
 
 ## Funcion de agrupamiento de datos segun conjunto espacial y escala temporal
@@ -147,8 +147,8 @@ adj_model_com <- function(formulas, tr_data, val_data){
       
       
       #model1 <- gamlss(formula = formula, data = temp_tr, family=NO(mu.link = "identity"))
-      model2 <- gamlss(formula = formula, data = temp_tr, family=PO(mu.link = "identity"))
-      model3 <- gamlss(formula = formula, data = temp_tr, family=NBI(mu.link = "identity"))
+      model2 <- gamlss(formula = formula, data = temp_tr, family=PO)
+      model3 <- gamlss(formula = formula, data = temp_tr, family=NBI)
       
       list_models = list(model2, model3)
       
@@ -159,13 +159,13 @@ adj_model_com <- function(formulas, tr_data, val_data){
     
       
       
-      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model2, newdata=temp_tr,data=temp_tr))^2))
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model2,newdata= temp_va,data=temp_tr))^2))
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - exp(predict(model2, newdata=temp_tr,data=temp_tr)))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - exp(predict(model2,newdata= temp_va,data=temp_tr)))^2))
       
       
       
-      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - predict(model3, newdata=temp_tr,data=temp_tr))^2))
-      mse_val.v <- c(mse_val.v, mean((temp_va$total - predict(model3,newdata= temp_va,data=temp_tr))^2))
+      mse_tr.v  <- c(mse_tr.v, mean((temp_tr$total - exp(predict(model3, newdata=temp_tr,data=temp_tr)))^2))
+      mse_val.v <- c(mse_val.v, mean((temp_va$total - exp(predict(model3,newdata= temp_va,data=temp_tr)))^2))
       
       
       temp <- data.frame(mse_tr = mse_tr.v , mse_va = mse_val.v)
@@ -239,6 +239,9 @@ VA_data <- filter(comuna_sem, PERIODO==2018)
 formulas = c(formula("total~SEMANA+I(PERIODO^2)+MES+PERIODO"),
             formula("total~SEMANA+MES"),
             formula("total~SEMANA+MES+PERIODO"),
+            formula("total~poly(SEMANA, degree=3)+poly(MES, degree = 4)+PERIODO"),
+            formula("total~poly(SEMANA, degree=3)+poly(MES, degree = 6)+PERIODO"),
+            formula("total~poly(SEMANA, degree=3)+poly(MES, degree = 5)+PERIODO"),
             formula("total~SEMANA+I(PERIODO^2)+PERIODO")
             #,formula("total~SEMANA+PERIODO+MES+I(MES^2)")
             #,formula("total~SEMANA+MES+I(MES^2)")
